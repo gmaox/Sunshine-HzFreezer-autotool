@@ -2,6 +2,7 @@ import json
 import os
 import tkinter as tk
 from tkinter import messagebox
+import webbrowser
 import keyboard
 from pystray import Icon, MenuItem, Menu
 from PIL import Image
@@ -79,8 +80,11 @@ def create_icon_image():
 # 退出函数
 def on_quit(icon, item):
     os._exit(0)
+def github():
+    webbrowser.open('https://github.com/gmaox/Sunshine-HzFreezer-autotool')
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
+    MenuItem("github/使用说明", github),
     MenuItem("同步雪藏快捷键", on_custom_input),
     MenuItem("Quit", on_quit)
 ))
