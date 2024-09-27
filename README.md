@@ -1,4 +1,4 @@
-# Sunshine-HzFreezerDM
+# 串流自动冻结小工具
 通过监听网络端口48000，实现串流暂停自动冻结，连接自动解冻<p>
 由于python keyboard库无法实现alt+win+c这种复杂组合键（bug？），请手动修改并输入可行的组合键<p>
 # 使用教程
