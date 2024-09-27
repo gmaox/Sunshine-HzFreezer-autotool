@@ -9,7 +9,6 @@ import sys
 import psutil
 import time
 import threading
-
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -18,79 +17,88 @@ def save_to_json(data, filename="1.json"):
     except Exception as e:
         print(f"Error saving to JSON: {e}")
         messagebox.showerror("Error", f"Failed to save data: {e}")
-
 # 从 JSON 文件读取数据
 def read_from_json(filename="1.json"):
     try:
         with open(filename, "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
-        return {"text1": "Default Text 1", "text2": "Default Text 2"}
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0"}
     except json.JSONDecodeError:
         print("Error decoding JSON.")
-        return {"text1": "Default Text 1", "text2": "Default Text 2"}
-
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0"}
 # 自定义窗口的回调函数
 def on_custom_input(icon, item):
     data = read_from_json()
-
     root = tk.Tk()
     root.title("同步雪藏快捷键")
-
-    entry_var1 = tk.StringVar(value=data.get("text1", "alt+win+z"))
-    entry_var2 = tk.StringVar(value=data.get("text2", "alt+win+c"))
-
+    # 将窗口设置为最顶层
+    root.attributes('-topmost', True)
+    entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
+    entry_var2 = tk.StringVar(value=data.get("text2", "ctrl+m"))
+    entry_var3 = tk.StringVar(value=data.get("text3", "48000"))
+    entry_var4 = tk.StringVar(value=data.get("text4", "3"))
+    entry_var5 = tk.StringVar(value=data.get("text5", "0"))
+    entry_var6 = tk.StringVar(value=data.get("text6", "0"))
     tk.Label(root, text="冻结光标程序快捷键:").grid(row=0, column=0)
     entry1 = tk.Entry(root, textvariable=entry_var1)
     entry1.grid(row=0, column=1)
-
     tk.Label(root, text="解冻快捷键:").grid(row=1, column=0)
     entry2 = tk.Entry(root, textvariable=entry_var2)
     entry2.grid(row=1, column=1)
-
+    tk.Label(root, text="端口号(默认48000):").grid(row=2, column=0)
+    entry3 = tk.Entry(root, textvariable=entry_var3)
+    entry3.grid(row=2, column=1)
+    tk.Label(root, text="监听间隔(默认3):").grid(row=3, column=0)
+    entry4 = tk.Entry(root, textvariable=entry_var4)
+    entry4.grid(row=3, column=1)
+    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=4, column=0)
+    entry5 = tk.Entry(root, textvariable=entry_var5)
+    entry5.grid(row=4, column=1)
+    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=5, column=0)
+    entry6 = tk.Entry(root, textvariable=entry_var6)
+    entry6.grid(row=5, column=1)
     def save_action():
         text1 = entry1.get()
         text2 = entry2.get()
-        new_data = {"text1": text1, "text2": text2}
+        text3 = entry3.get()
+        text4 = entry4.get()
+        text5 = entry5.get()
+        text6 = entry6.get()
+        new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6}
         save_to_json(new_data)
         messagebox.showinfo("Success", "Data saved successfully!")
         python = sys.executable
         os.execl(python, python, *sys.argv)
-
     save_button = tk.Button(root, text="Save", command=save_action)
-    save_button.grid(row=2, column=0, columnspan=2)
-
+    save_button.grid(row=6, column=0, columnspan=2)
     root.mainloop()
-
 # 从 favicon.ico 加载图标
 def create_icon_image():
     return Image.open(os.path.join(os.path.dirname(__file__), "favicon.ico"))
-
 # 退出函数
 def on_quit(icon, item):
     os._exit(0)
-
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
     MenuItem("同步雪藏快捷键", on_custom_input),
     MenuItem("Quit", on_quit)
 ))
-
 def start_icon():
     icon.run()
-
 # 启动托盘图标线程
 icon_thread = threading.Thread(target=start_icon)
 icon_thread.daemon = True
 icon_thread.start()
-
 # 设置要监听的端口和检查时间间隔
-PORT = 48000
-INTERVAL = 3
 SUN = False
 data = read_from_json()
-KEY1 = data.get("text1", "alt+win+z")
-KEY2 = data.get("text2", "alt+win+c")
+KEY1 = data.get("text1", "ctrl+b")
+KEY2 = data.get("text2", "ctrl+m")
+PORT = int(data.get("text3", "48000"))
+INTERVAL = int(data.get("text4","3"))
+TIMESLEEP1 =int(data.get("text5","0"))
+TIMESLEEP2 =int(data.get("text6","0"))
 # 检查端口占用情况
 def check_port_usage():
     global SUN
@@ -103,33 +111,29 @@ def check_port_usage():
                 if SUN == False:
                     SUN = True
                     print("sunshine.exe is running--------------"+KEY2)
-                    time.sleep(3)
+                    time.sleep(TIMESLEEP1)
                     keyboard.press_and_release(KEY2)
             break
-    
     if not port_in_use:
         print(f"Port {PORT} is free.")
         if SUN == True:
             SUN = False
             print("sunshine.exe is close----------------"+KEY1)
-            time.sleep(3)
+            time.sleep(TIMESLEEP2)
             keyboard.press_and_release(KEY1)
-
-
 def generate_report():
     while True:
         print(f"\nChecking port {PORT} usage at {time.strftime('%Y-%m-%d %H:%M:%S')}")
         check_port_usage()
         time.sleep(INTERVAL)
-
 # 启动定时生成报告的线程
 report_thread = threading.Thread(target=generate_report)
 report_thread.daemon = True
 report_thread.start()
-
 # 主线程等待
 try:
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
     print("Program interrupted and stopping...")
+
