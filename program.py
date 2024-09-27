@@ -10,6 +10,14 @@ import sys
 import psutil
 import time
 import threading
+import win32event,win32api,time
+import ctypes
+#确保只有一个程序运行
+if __name__ == '__main__':
+    mutex = win32event.CreateMutex(None, False, 'Sunshine-HzFreezer-autotool')
+    if win32api.GetLastError() > 0:
+        print('程序已运行...')
+        exit(0)
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -82,8 +90,12 @@ def on_quit(icon, item):
     os._exit(0)
 def github():
     webbrowser.open('https://github.com/gmaox/Sunshine-HzFreezer-autotool')
+def console():
+    ctypes.windll.kernel32.AllocConsole()
+    sys.stdout = open("CONOUT$", "w")
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
+    MenuItem("调试", console),
     MenuItem("github/使用说明", github),
     MenuItem("同步雪藏快捷键", on_custom_input),
     MenuItem("Quit", on_quit)
