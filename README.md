@@ -2,6 +2,8 @@
 通过监听网络端口48000，实现串流暂停自动冻结，连接自动解冻<p>
 由于python keyboard库无法实现alt+win+c这种复杂组合键（bug？），请手动修改并输入可行的组合键<p>
 # 使用教程
+0--首先你得先安装雪藏。。<p>
+友情链接：https://github.com/superDMS/HsFreezer-Hidden-in-the-snow-/<p>
 1--配置快捷键，使程序正常工作
 ![屏幕截图 2024-09-278](https://github.com/user-attachments/assets/ff4b1292-c54b-4887-a183-238f9e6f4429)
 2--将该工具添加到sunshine，优化使用体验
