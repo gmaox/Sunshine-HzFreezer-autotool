@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import webbrowser
 import keyboard
+from win10toast import ToastNotifier
 from pystray import Icon, MenuItem, Menu
 from PIL import Image
 import sys
@@ -12,12 +13,15 @@ import time
 import threading
 import win32event,win32api,time
 import ctypes
+#初始化通知
+toaster = ToastNotifier()
 #确保只有一个程序运行
 if __name__ == '__main__':
     mutex = win32event.CreateMutex(None, False, 'Sunshine-HzFreezer-autotool')
     if win32api.GetLastError() > 0:
-        print('程序已运行...')
-        exit(0)
+        toaster.show_toast("​不许调戏心海酱(￣Д ￣)", "​工具已在后台运行", icon_path='',duration=0.01)
+        os._exit(0)
+toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -40,7 +44,7 @@ def read_from_json(filename="1.json"):
 def on_custom_input(icon, item):
     data = read_from_json()
     root = tk.Tk()
-    root.title("同步雪藏快捷键")
+    root.title("若无法输入请尝试选中窗口")
     # 将窗口设置为最顶层
     root.attributes('-topmost', True)
     entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
@@ -97,7 +101,7 @@ def console():
 icon = Icon("test", create_icon_image(), menu=Menu(
     MenuItem("调试", console),
     MenuItem("github/使用说明", github),
-    MenuItem("同步雪藏快捷键", on_custom_input),
+    MenuItem("程序设置", on_custom_input),
     MenuItem("Quit", on_quit)
 ))
 def start_icon():
