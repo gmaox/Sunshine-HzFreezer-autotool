@@ -1,6 +1,7 @@
 # 串流自动冻结小工具
 通过监听网络端口48000，实现串流暂停自动冻结，连接自动解冻<p>
 由于python keyboard库无法实现alt+win+c这种复杂组合键（bug？），请手动修改并输入可行的组合键<p>
+**部分游戏（如原神）需要 *管理员身份* 运行此工具才能正常冻结！！**
 # 使用教程
 0--首先你得先安装雪藏。。<p>
 友情链接：https://github.com/superDMS/HsFreezer-Hidden-in-the-snow-/<p>
