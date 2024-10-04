@@ -7,9 +7,9 @@
 友情链接：https://github.com/superDMS/HsFreezer-Hidden-in-the-snow-/<p>
 1--配置快捷键，使程序正常工作（理论上两个快捷键一致即可工作，但由于前文所说bug，我推荐将雪藏冻结快捷键设置为图中两个）
 ![屏幕截图 2024-09-27 180148](https://github.com/user-attachments/assets/60702f5f-5a28-49ed-9e21-ce57ebea512c)
-2--确保后台任务栏有心海图标即可。若快捷键设置正确，当使用moonlight连接时，雪藏若弹出解冻程序提示即可正常使用！
-![371861266-d91ddec5-096d-440f-b618-d71ab8246c11](https://github.com/user-attachments/assets/a9fc074f-a849-4097-8c86-87b962c3a242)
-优化使用体验--将该工具添加到sunshine
+2--确保后台任务栏有心海图标即可。若快捷键设置正确，当使用moonlight连接时，雪藏若弹出解冻程序提示即可正常使用！<p>
+![371861266-d91ddec5-096d-440f-b618-d71ab8246c11](https://github.com/user-attachments/assets/a9fc074f-a849-4097-8c86-87b962c3a242)<p>
+优化使用体验--将该工具添加到sunshine<p>
 ![屏幕截图 2024-09-27 175802](https://github.com/user-attachments/assets/b940b781-97ec-4b58-a3be-69e147da7ecf)
 ![屏幕截图 2024-10-04 194448](https://github.com/user-attachments/assets/ce23789c-dc0d-409b-b4f0-b8872cafad89)
 <p>
