@@ -21,7 +21,10 @@ if __name__ == '__main__':
     if win32api.GetLastError() > 0:
         toaster.show_toast("​不许调戏心海酱(￣Д ￣)", "​工具已在后台运行", icon_path='',duration=0.01)
         os._exit(0)
-toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
+if ctypes.windll.shell32.IsUserAnAdmin()==0:
+    toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
+elif ctypes.windll.shell32.IsUserAnAdmin()==1:
+    toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -59,18 +62,18 @@ def on_custom_input(icon, item):
     tk.Label(root, text="解冻快捷键:").grid(row=1, column=0)
     entry2 = tk.Entry(root, textvariable=entry_var2)
     entry2.grid(row=1, column=1)
-    tk.Label(root, text="端口号(默认48000):").grid(row=2, column=0)
+    tk.Label(root, text="端口号(默认48000):").grid(row=3, column=0)
     entry3 = tk.Entry(root, textvariable=entry_var3)
-    entry3.grid(row=2, column=1)
-    tk.Label(root, text="监听间隔(默认3):").grid(row=3, column=0)
+    entry3.grid(row=3, column=1)
+    tk.Label(root, text="监听间隔(默认3):").grid(row=4, column=0)
     entry4 = tk.Entry(root, textvariable=entry_var4)
-    entry4.grid(row=3, column=1)
-    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=4, column=0)
+    entry4.grid(row=4, column=1)
+    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=5, column=0)
     entry5 = tk.Entry(root, textvariable=entry_var5)
-    entry5.grid(row=4, column=1)
-    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=5, column=0)
+    entry5.grid(row=5, column=1)
+    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=6, column=0)
     entry6 = tk.Entry(root, textvariable=entry_var6)
-    entry6.grid(row=5, column=1)
+    entry6.grid(row=6, column=1)
     def save_action():
         text1 = entry1.get()
         text2 = entry2.get()
@@ -83,8 +86,13 @@ def on_custom_input(icon, item):
         messagebox.showinfo("Success", "Data saved successfully!")
         python = sys.executable
         os.execl(python, python, *sys.argv)
-    save_button = tk.Button(root, text="Save", command=save_action)
-    save_button.grid(row=6, column=0, columnspan=2)
+    save_button = tk.Button(root, text="--Save--", command=save_action)
+    save_button.grid(row=7, column=0, columnspan=2)
+    tk.Label(root, text="\n输入后可测试：       \n").grid(row=2, column=0)
+    test1_button = tk.Button(root, text="模拟冻结按键", command=lambda: keyboard.press_and_release(entry1.get()))
+    test1_button.grid(row=2, column=0, columnspan=4)
+    test2_button = tk.Button(root, text="模拟解冻按键", command=lambda: keyboard.press_and_release(entry2.get()))
+    test2_button.grid(row=2, column=1)
     root.mainloop()
 # 从 favicon.ico 加载图标
 def create_icon_image():
