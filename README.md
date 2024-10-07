@@ -12,5 +12,7 @@
 优化使用体验--将该工具添加到sunshine<p>
 ![屏幕截图 2024-09-27 175802](https://github.com/user-attachments/assets/b940b781-97ec-4b58-a3be-69e147da7ecf)
 ![屏幕截图 2024-10-04 194448](https://github.com/user-attachments/assets/ce23789c-dc0d-409b-b4f0-b8872cafad89)
+![屏幕截图 2024-10-05 213147](https://github.com/user-attachments/assets/91a78059-1b69-462c-b605-fa90ba618de1)
+
 <p>
 该程序最大意义：串流异常（如掉线）时雪藏美好瞬间，让您不错过游戏的精彩时刻。以及带来掌机般的便捷休眠体验。<p>
