@@ -10,7 +10,7 @@
 2--确保后台任务栏有心海图标即可。若快捷键设置正确，当使用moonlight连接时，雪藏若弹出解冻程序提示即可正常使用！<p>
 ![371861266-d91ddec5-096d-440f-b618-d71ab8246c11](https://github.com/user-attachments/assets/a9fc074f-a849-4097-8c86-87b962c3a242)<p>
 优化使用体验--将该工具添加到sunshine<p>
-**推荐在程序设置中开启开机自启，可避免锁屏页面无法启动串流的问题**
+**（推荐在程序设置中开启开机自启本工具，可避免锁屏页面无法启动串流的问题）**
 ![屏幕截图 2024-09-27 175802](https://github.com/user-attachments/assets/b940b781-97ec-4b58-a3be-69e147da7ecf)
 ![屏幕截图 2024-10-04 194448](https://github.com/user-attachments/assets/ce23789c-dc0d-409b-b4f0-b8872cafad89)
 ![屏幕截图 2024-10-05 213147](https://github.com/user-attachments/assets/91a78059-1b69-462c-b605-fa90ba618de1)
