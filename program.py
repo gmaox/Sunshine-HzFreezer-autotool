@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import tkinter as tk
 from tkinter import messagebox
 import webbrowser
@@ -48,8 +49,6 @@ def on_custom_input(icon, item):
     data = read_from_json()
     root = tk.Tk()
     root.title("若无法输入请尝试选中窗口")
-    # 将窗口设置为最顶层
-    root.attributes('-topmost', True)
     entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
     entry_var2 = tk.StringVar(value=data.get("text2", "ctrl+m"))
     entry_var3 = tk.StringVar(value=data.get("text3", "48000"))
@@ -62,18 +61,19 @@ def on_custom_input(icon, item):
     tk.Label(root, text="解冻快捷键:").grid(row=1, column=0)
     entry2 = tk.Entry(root, textvariable=entry_var2)
     entry2.grid(row=1, column=1)
-    tk.Label(root, text="端口号(默认48000):").grid(row=3, column=0)
+    tk.Label(root, text="↑确保按钮点击后有雪藏有反应↑\n").grid(row=3, column=0, columnspan=2)
+    tk.Label(root, text="端口号(默认48000):").grid(row=4, column=0)
     entry3 = tk.Entry(root, textvariable=entry_var3)
-    entry3.grid(row=3, column=1)
-    tk.Label(root, text="监听间隔(默认3):").grid(row=4, column=0)
+    entry3.grid(row=4, column=1)
+    tk.Label(root, text="监听间隔(默认3):").grid(row=5, column=0)
     entry4 = tk.Entry(root, textvariable=entry_var4)
-    entry4.grid(row=4, column=1)
-    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=5, column=0)
+    entry4.grid(row=5, column=1)
+    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=6, column=0)
     entry5 = tk.Entry(root, textvariable=entry_var5)
-    entry5.grid(row=5, column=1)
-    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=6, column=0)
+    entry5.grid(row=6, column=1)
+    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=7, column=0)
     entry6 = tk.Entry(root, textvariable=entry_var6)
-    entry6.grid(row=6, column=1)
+    entry6.grid(row=7, column=1)
     def save_action():
         text1 = entry1.get()
         text2 = entry2.get()
@@ -86,8 +86,52 @@ def on_custom_input(icon, item):
         messagebox.showinfo("Success", "Data saved successfully!")
         python = sys.executable
         os.execl(python, python, *sys.argv)
-    save_button = tk.Button(root, text="--Save--", command=save_action)
-    save_button.grid(row=7, column=0, columnspan=2)
+    save_button = tk.Button(root, text="--保存以上修改--", command=save_action)
+    save_button.grid(row=8, column=0, columnspan=2)
+    def startuprun():
+        def check_task_exists(task_name):
+            """检查任务是否存在"""
+            command = ['schtasks', '/query', '/tn', task_name]
+            try:
+                # 如果任务存在，将返回0
+                subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                return True
+            except subprocess.CalledProcessError:
+                return False
+
+        def delete_task(task_name):
+            """删除指定的任务"""
+            command = ['schtasks', '/delete', '/tn', task_name, '/f']
+            subprocess.run(command, check=True)
+            messagebox.showinfo('删除成功',f"任务 {task_name} 已删除。")
+
+        def create_startup_task(task_name, app_path):
+            """创建开机自启任务"""
+            command = [
+                'schtasks', '/create', '/tn', task_name, '/tr', f'"{app_path}"',
+                '/sc', 'onlogon', '/rl', 'highest', '/f'
+            ]
+
+            try:
+                # 调用 schtasks 命令
+                subprocess.run(command, check=True)
+                messagebox.showinfo('创建成功',f"开机自启任务 {task_name} 创建成功！")
+            except subprocess.CalledProcessError as e:
+                messagebox.showinfo('错误',f"任务创建失败，或许是没有管理员权限: {e}")
+
+        # 示例
+        task_name = "MysunAppAutoStart"  # 任务名称
+        app_path = psutil.Process(os.getpid()).exe()  # 可执行文件路径
+
+        # 检查任务是否存在
+        if check_task_exists(task_name):
+            delete_task(task_name)  # 删除现有任务
+        else:
+            create_startup_task(task_name, app_path)# 创建新任务
+
+    save_button = tk.Button(root, text="开启或关闭开机自启", command=startuprun)
+    save_button.grid(row=10, column=0, columnspan=2)
+    tk.Label(root, text="不喜欢通知可以在win设置中关闭").grid(row=9, column=0, columnspan=2)
     tk.Label(root, text="\n输入后可测试：       \n").grid(row=2, column=0)
     test1_button = tk.Button(root, text="模拟冻结按键", command=lambda: keyboard.press_and_release(entry1.get()))
     test1_button.grid(row=2, column=0, columnspan=4)
