@@ -3,6 +3,7 @@
 由于python keyboard库无法实现alt+win+c这种类型组合键（bug？），请手动修改并输入可行的组合键<p>
 **部分游戏（如原神）需要 *管理员身份* 运行此工具才能正常冻结！！**
 # 使用教程
+视频教程<a href="http://b23.tv/ZOkEsk7">【串流小工具】自动冻结工具使用教程</a><p>
 0--首先你得先安装雪藏。。<p>
 友情链接：https://github.com/superDMS/HsFreezer-Hidden-in-the-snow-/<p>
 1--配置快捷键，使程序正常工作（理论上两个快捷键一致即可工作，但由于前文所说bug，我推荐将雪藏冻结快捷键设置为图中两个）
