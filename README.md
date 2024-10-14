@@ -12,20 +12,29 @@
 ![屏幕截图 2024-09-27 180148](https://github.com/user-attachments/assets/60702f5f-5a28-49ed-9e21-ce57ebea512c)
 2--确保后台任务栏有心海图标即可。若快捷键设置正确，当使用moonlight连接时，雪藏若弹出解冻程序提示即可正常使用！<p>
 ![371861266-d91ddec5-096d-440f-b618-d71ab8246c11](https://github.com/user-attachments/assets/a9fc074f-a849-4097-8c86-87b962c3a242)<p>
-**（推荐在程序设置中开启开机自启本工具，可避免锁屏页面无法启动串流的问题，开启后就没必要设置下面这些了）**
+目前有三种使用方法（点击展开）<p>
+
 <details> 
-    <summary>将该工具添加到sunshine，让他随着串流同步运行（设置开机自启后就没必要看了）</summary>
+    <summary>方法一：推荐在程序设置中开启开机自启本工具，可避免方法二在登录界面时无法启动串流的问题</summary>
+
+![屏幕截图 2024-10-14 121149](https://github.com/user-attachments/assets/88b88c1e-ab78-4901-82d5-ef326f1139ad)
+
+</details>
+<details> 
+    <summary>方法二：将该工具添加到sunshine，让他随着串流同步运行</summary>
   
 ![屏幕截图 2024-09-27 175802](https://github.com/user-attachments/assets/b940b781-97ec-4b58-a3be-69e147da7ecf)
 ![屏幕截图 2024-10-04 194448](https://github.com/user-attachments/assets/ce23789c-dc0d-409b-b4f0-b8872cafad89)
 
 </details>
 <details> 
-    <summary>或者每次想用的时候手动点击启动也行</summary>
+    <summary>方法三：每次想用的时候手动点击启动</summary>
 
 默认管理员启动更方便~
 ![屏幕截图 2024-10-05 213147](https://github.com/user-attachments/assets/91a78059-1b69-462c-b605-fa90ba618de1)
 
 </details>
 <p>
-该程序最大意义：串流异常（如掉线）时雪藏美好瞬间，让您不错过游戏的精彩时刻。以及带来掌机般的便捷休眠体验。<p>
+该程序最大意义：串流异常（如掉线）时雪藏美好瞬间，让您不错过游戏的精彩时刻。以及带来掌机般的便捷休眠体验。<p><hr>
+目前只支持sunshine，英伟达shine是不能用的（应该能用？但我没法运行shine来调试所以不能用<p>
+网易gv经测试得出端口是在串流断开后过一大会才会释放，并且每次连接端口号都不一样，故不做适配
