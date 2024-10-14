@@ -18,6 +18,12 @@
   
 ![屏幕截图 2024-09-27 175802](https://github.com/user-attachments/assets/b940b781-97ec-4b58-a3be-69e147da7ecf)
 ![屏幕截图 2024-10-04 194448](https://github.com/user-attachments/assets/ce23789c-dc0d-409b-b4f0-b8872cafad89)
+
+</details>
+<details> 
+    <summary>或者每次想用的时候手动点击启动也行</summary>
+
+默认管理员启动更方便~
 ![屏幕截图 2024-10-05 213147](https://github.com/user-attachments/assets/91a78059-1b69-462c-b605-fa90ba618de1)
 
 </details>
