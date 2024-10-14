@@ -119,9 +119,11 @@ def on_custom_input(icon, item):
             except subprocess.CalledProcessError as e:
                 messagebox.showinfo('错误',f"任务创建失败，或许是没有管理员权限: {e}")
 
-        # 示例
+        with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
+            file.write(f'@echo off\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
         task_name = "MysunAppAutoStart"  # 任务名称
-        app_path = psutil.Process(os.getpid()).exe()  # 可执行文件路径
+        app_path = os.path.dirname(psutil.Process(os.getpid()).exe())+"\\MysunAppAutoStart.bat"  # 可执行文件路径
+        
 
         # 检查任务是否存在
         if check_task_exists(task_name):
