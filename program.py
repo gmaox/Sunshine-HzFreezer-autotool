@@ -24,8 +24,10 @@ if __name__ == '__main__':
         os._exit(0)
 if ctypes.windll.shell32.IsUserAnAdmin()==0:
     toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
+    ADMIN = False
 elif ctypes.windll.shell32.IsUserAnAdmin()==1:
     toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
+    ADMIN = True
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -40,13 +42,14 @@ def read_from_json(filename="1.json"):
         with open(filename, "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
-        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0"}
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令"}
     except json.JSONDecodeError:
         print("Error decoding JSON.")
-        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0"}
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令"}
+root = None
 # 自定义窗口的回调函数
-def on_custom_input(icon, item):
-    data = read_from_json()
+def on_custom_input():
+    global SLEEPVALUE,entry_var8
     root = tk.Tk()
     root.title("若无法输入请尝试选中窗口")
     entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
@@ -55,6 +58,12 @@ def on_custom_input(icon, item):
     entry_var4 = tk.StringVar(value=data.get("text4", "3"))
     entry_var5 = tk.StringVar(value=data.get("text5", "0"))
     entry_var6 = tk.StringVar(value=data.get("text6", "0"))
+    entry_var7 = tk.StringVar(value=data.get("text7", "0"))
+    entry_var8 = tk.StringVar(value=data.get("text8", "120"))
+    SLEEPVALUE = data.get("text9", 0)
+    entry_var10 = tk.StringVar(value=data.get("text10", "0"))
+    entry_var11 = tk.StringVar(value=data.get("text11", "输入冻结时的命令"))
+    entry_var12 = tk.StringVar(value=data.get("text12", "输入解冻时的命令"))
     tk.Label(root, text="冻结光标程序快捷键:").grid(row=0, column=0)
     entry1 = tk.Entry(root, textvariable=entry_var1)
     entry1.grid(row=0, column=1)
@@ -62,33 +71,58 @@ def on_custom_input(icon, item):
     entry2 = tk.Entry(root, textvariable=entry_var2)
     entry2.grid(row=1, column=1)
     tk.Label(root, text="↑确保按钮点击后有雪藏有反应↑\n").grid(row=3, column=0, columnspan=2)
-    tk.Label(root, text="端口号(默认48000):").grid(row=4, column=0)
+    tk.Label(root, text="端口号 (默认48000):").grid(row=4, column=0)
     entry3 = tk.Entry(root, textvariable=entry_var3)
     entry3.grid(row=4, column=1)
-    tk.Label(root, text="监听间隔(默认3):").grid(row=5, column=0)
+    tk.Label(root, text="监听间隔 (默认3):").grid(row=5, column=0)
     entry4 = tk.Entry(root, textvariable=entry_var4)
     entry4.grid(row=5, column=1)
-    tk.Label(root, text="以下两参数为虚拟显示器准备\n连接与解冻间隔:").grid(row=6, column=0)
+    tk.Label(root, text="以下两参数为虚拟显示器准备\n解冻前等待 (默认0):").grid(row=6, column=0)
     entry5 = tk.Entry(root, textvariable=entry_var5)
     entry5.grid(row=6, column=1)
-    tk.Label(root, text="暂停串流与冻结间隔:").grid(row=7, column=0)
+    tk.Label(root, text="冻结前等待 (默认0):").grid(row=7, column=0)
     entry6 = tk.Entry(root, textvariable=entry_var6)
     entry6.grid(row=7, column=1)
     def save_action():
+        global SLEEPVALUE
         text1 = entry1.get()
         text2 = entry2.get()
         text3 = entry3.get()
         text4 = entry4.get()
         text5 = entry5.get()
         text6 = entry6.get()
-        new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6}
+        text7 = entry_var7.get()
+        try:
+            text8 = entry8.get()
+            if selected_option.get()=="睡眠":
+                SLEEPVALUE=0
+            else:
+                SLEEPVALUE=1
+            text9 = SLEEPVALUE
+        except:
+            text8=120
+            text9=0
+        text10 = entry_var10.get()
+        try:
+            text11 = entry11.get()
+            text12 = entry12.get()
+        except:
+            text11="输入冻结时的命令"
+            text12="输入解冻时的命令"
+        if text1 == "" or text2 == "" or text3 == "" or text4 == "" or text5 == "" or text6 == "" or text7 == "" or text8 == "" or text9 == "" or text10 == "" or text11 == "" or text12 == "":
+            messagebox.showerror("Error", "请输入完整数据")
+            return
+        new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6,"text7": text7,"text8": text8,"text9": text9,"text10": text10,"text11": text11,"text12": text12}
         save_to_json(new_data)
-        messagebox.showinfo("Success", "Data saved successfully!")
+        messagebox.showinfo("Data saved successfully!", "保存成功\n若选中了底下两个多选框导致的保存\n请重新打开设置查看更多配置项")
         python = sys.executable
         os.execl(python, python, *sys.argv)
-    save_button = tk.Button(root, text="--保存以上修改--", command=save_action)
+    save_button = tk.Button(root, text="--保存全部修改--", command=save_action)
     save_button.grid(row=8, column=0, columnspan=2)
     def startuprun():
+        if ADMIN==False:
+            messagebox.showerror("错误", "请使用管理员权限设置开机自启")
+            return
         def check_task_exists(task_name):
             """检查任务是否存在"""
             command = ['schtasks', '/query', '/tn', task_name]
@@ -117,7 +151,7 @@ def on_custom_input(icon, item):
                 subprocess.run(command, check=True)
                 messagebox.showinfo('创建成功',f"开机自启任务 {task_name} 创建成功！")
             except subprocess.CalledProcessError as e:
-                messagebox.showinfo('错误',f"任务创建失败，或许是没有管理员权限: {e}")
+                messagebox.showinfo('错误',f"任务创建失败: {e}")
 
         with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
             file.write(f'@echo off\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
@@ -139,6 +173,33 @@ def on_custom_input(icon, item):
     test1_button.grid(row=2, column=0, columnspan=4)
     test2_button = tk.Button(root, text="模拟解冻按键", command=lambda: keyboard.press_and_release(entry2.get()))
     test2_button.grid(row=2, column=1)
+    checkbox1 = tk.Checkbutton(root, text="启用休眠倒计时", variable=entry_var7, command=save_action)
+    checkbox1.grid(row=11, column=0)
+    if int(entry_var7.get())==1:
+        tk.Label(root,text="断连后倒计时多久休眠？(秒)").grid(row=12, column=0)
+        entry8 = tk.Entry(root, textvariable=entry_var8)
+        entry8.grid(row=12, column=1)
+        selected_option = tk.StringVar(root)
+        if data.get("text9", 0) == 0:
+            selected_option.set("睡眠") 
+            options = ["睡眠", "休眠"]
+        else:
+            selected_option.set("休眠")
+            options = ["休眠", "睡眠"]
+        option_menu = tk.OptionMenu(root, selected_option, *options)
+        tk.Label(root,text="选择以何种方式执行").grid(row=13, column=0)
+        option_menu.grid(row=13, column=1)
+    checkbox1 = tk.Checkbutton(root, text="启用命令接口", variable=entry_var10, command=save_action)
+    checkbox1.grid(row=11, column=1)
+    if int(entry_var10.get())==1:
+        entry11 = tk.Entry(root, textvariable=entry_var11)
+        entry12 = tk.Entry(root, textvariable=entry_var12)
+        if int(entry_var7.get())==1:
+            entry11.grid(row=14, column=0)
+            entry12.grid(row=14, column=1)
+        else:
+            entry11.grid(row=12, column=0)
+            entry12.grid(row=12, column=1)
     root.mainloop()
 # 从 favicon.ico 加载图标
 def create_icon_image():
@@ -151,6 +212,7 @@ def github():
 def console():
     ctypes.windll.kernel32.AllocConsole()
     sys.stdout = open("CONOUT$", "w")
+
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
     MenuItem("调试", console),
@@ -173,7 +235,78 @@ PORT = int(data.get("text3", "48000"))
 INTERVAL = int(data.get("text4","3"))
 TIMESLEEP1 =int(data.get("text5","0"))
 TIMESLEEP2 =int(data.get("text6","0"))
-# 检查端口占用情况
+
+#------------定时休眠---------------
+SLEEPBUTTON = int(data.get("text7", "0"))
+SLEEPTYPE = int(data.get("text9","0"))
+if SLEEPTYPE == 0:
+    SLEEPTYPEM = "睡眠"
+else:
+    SLEEPTYPEM = "休眠"
+TIMENUM = int(data.get("text8", "120"))
+def start_sleep():
+    if SUN == True:
+        return
+    windowsleeprun = threading.Thread(target=timeover)
+    windowsleeprun.daemon = True
+    windowsleeprun.start()
+def timeover():
+    time.sleep(3)
+    window = tk.Tk()
+    window.wm_attributes('-topmost', 1)
+    window.title("")
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = (screen_width // 2) - (200 // 2)
+    y = (screen_height // 2) - (100 // 2) - 150
+    window.geometry(f"200x100+{x}+{y}")
+    tk.Label(window, text=f"倒计时结束后\n系统将会尝试进行->{SLEEPTYPEM}").pack()
+
+    timenum = TIMENUM  # 初始计时值
+    label = tk.Label(window, text=f"{timenum}")  # 创建标签显示计时
+    label.pack()
+
+    # 定义一个函数关闭窗口
+    def on_closing():
+        window.destroy()
+
+    # 更新计时的函数
+    def update_timer():
+        global SUN
+        nonlocal timenum        # 使用nonlocal来修改外部变量
+        if timenum > 0:         # 计时未结束
+            timenum -= 1
+            label.config(text=f"{timenum}")  # 更新标签内容
+            window.after(1000, update_timer)  # 每1000毫秒（1秒）调用自己
+        elif SUN == True:
+            on_closing()
+        else:
+            ctypes.windll.powrprof.SetSuspendState(SLEEPTYPE, 1, 0)
+            on_closing()
+            print("倒计时结束，开始休眠")
+            
+    
+    window.protocol("WM_DELETE_WINDOW", on_closing)# 绑定窗口关闭事件
+
+
+    tk.Button(window, text="单击按钮或关闭窗口\n取消休眠或睡眠", command=on_closing).pack()
+
+    update_timer()      # 开始计时
+    window.mainloop()   # 主循环
+
+#---------------------------------------------
+# 命令相关
+DATA1 = int(data.get("text10", "0"))
+DATA2 = data.get("text11", "0")
+DATA3 = data.get("text12", "0")
+def shell_command(command):
+    if DATA1 == False:
+        return
+    if command ==1:
+        os.system(DATA2)
+    else:
+        os.system(DATA3)
+# 检查端口是否被占用（重点）
 def check_port_usage():
     global SUN
     port_in_use = False
@@ -187,6 +320,7 @@ def check_port_usage():
                     print("sunshine.exe is running--------------"+KEY2)
                     time.sleep(TIMESLEEP1)
                     keyboard.press_and_release(KEY2)
+                    shell_command(0)
             break
     if not port_in_use:
         print(f"Port {PORT} is free.")
@@ -195,6 +329,9 @@ def check_port_usage():
             print("sunshine.exe is close----------------"+KEY1)
             time.sleep(TIMESLEEP2)
             keyboard.press_and_release(KEY1)
+            if SLEEPBUTTON == True:
+                start_sleep()
+            shell_command(1)
 def generate_report():
     while True:
         print(f"\nChecking port {PORT} usage at {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -204,6 +341,7 @@ def generate_report():
 report_thread = threading.Thread(target=generate_report)
 report_thread.daemon = True
 report_thread.start()
+
 # 主线程等待
 try:
     while True:
