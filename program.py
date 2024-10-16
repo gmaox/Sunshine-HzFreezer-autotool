@@ -1,5 +1,6 @@
 import json
 import os
+import queue
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -109,7 +110,7 @@ def on_custom_input():
         except:
             text11="输入冻结时的命令"
             text12="输入解冻时的命令"
-        if text1 == "" or text2 == "" or text3 == "" or text4 == "" or text5 == "" or text6 == "" or text7 == "" or text8 == "" or text9 == "" or text10 == "" or text11 == "" or text12 == "":
+        if text3 == "" or text4 == "" or text5 == "" or text6 == "" or text7 == "" or text8 == "" or text9 == "" or text10 == "" or text11 == "" or text12 == "":
             messagebox.showerror("Error", "请输入完整数据")
             return
         new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6,"text7": text7,"text8": text8,"text9": text9,"text10": text10,"text11": text11,"text12": text12}
@@ -251,6 +252,11 @@ def start_sleep():
     windowsleeprun.daemon = True
     windowsleeprun.start()
 def timeover():
+    try:
+        item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
+        print(f"获取的元素: {item}")
+    except queue.Empty:
+        print("队列是空的，无法获取元素。")
     time.sleep(3)
     window = tk.Tk()
     window.wm_attributes('-topmost', 1)
@@ -268,18 +274,22 @@ def timeover():
 
     # 定义一个函数关闭窗口
     def on_closing():
-        window.destroy()
+        window.after(0, window.destroy)
 
     # 更新计时的函数
     def update_timer():
-        global SUN
-        nonlocal timenum        # 使用nonlocal来修改外部变量
+        nonlocal timenum
+        try:
+            item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
+            print(f"获取的元素: {item}")
+            on_closing()
+            time.sleep(1)
+        except queue.Empty:
+            pass
         if timenum > 0:         # 计时未结束
             timenum -= 1
             label.config(text=f"{timenum}")  # 更新标签内容
             window.after(1000, update_timer)  # 每1000毫秒（1秒）调用自己
-        elif SUN == True:
-            on_closing()
         else:
             ctypes.windll.powrprof.SetSuspendState(SLEEPTYPE, 1, 0)
             on_closing()
@@ -306,6 +316,8 @@ def shell_command(command):
         os.system(DATA2)
     else:
         os.system(DATA3)
+q = queue.Queue(maxsize=1)
+q2 = queue.Queue(maxsize=1)
 # 检查端口是否被占用（重点）
 def check_port_usage():
     global SUN
@@ -319,7 +331,15 @@ def check_port_usage():
                     SUN = True
                     print("sunshine.exe is running--------------"+KEY2)
                     time.sleep(TIMESLEEP1)
-                    keyboard.press_and_release(KEY2)
+                    try:
+                        keyboard.press_and_release(KEY2)
+                    except:
+                        pass
+                    if SLEEPBUTTON == True:
+                        try:
+                            q.put_nowait(1)
+                        except:
+                            pass
                     shell_command(0)
             break
     if not port_in_use:
@@ -328,9 +348,15 @@ def check_port_usage():
             SUN = False
             print("sunshine.exe is close----------------"+KEY1)
             time.sleep(TIMESLEEP2)
-            keyboard.press_and_release(KEY1)
+            try:
+                keyboard.press_and_release(KEY1)
+            except:
+                pass
             if SLEEPBUTTON == True:
-                start_sleep()
+                try:
+                    q2.put_nowait(2)
+                except:
+                    pass
             shell_command(1)
 def generate_report():
     while True:
@@ -341,11 +367,34 @@ def generate_report():
 report_thread = threading.Thread(target=generate_report)
 report_thread.daemon = True
 report_thread.start()
-
-# 主线程等待
 try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("Program interrupted and stopping...")
+    item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
+    print(f"获取的元素: {item}")
+    time.sleep(1)
+except queue.Empty:
+    pass
+# 主线程等待--分支
+if SLEEPBUTTON == True:
+    try:
+        while True:
+            try:
+                item = q2.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
+                print(f"获取的元nbfcjncvhcv素: {item}")
+                start_sleep()
+                time.sleep(1)
+            except queue.Empty:
+                pass        
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Program interrupted and stopping...")
+else:
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Program interrupted and stopping...")
 
+
+
+
+#-------------------------400-------------------------
