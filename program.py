@@ -204,7 +204,10 @@ def on_custom_input():
     root.mainloop()
 # 从 favicon.ico 加载图标
 def create_icon_image():
-    return Image.open(os.path.join(os.path.dirname(__file__), "favicon.ico"))
+    if SLEEPBUTTON == True:
+        return Image.open(os.path.join(os.path.dirname(__file__), "favicon_sleep.ico"))
+    else:
+        return Image.open(os.path.join(os.path.dirname(__file__), "favicon.ico"))
 # 退出函数
 def on_quit(icon, item):
     os._exit(0)
@@ -214,6 +217,8 @@ def console():
     ctypes.windll.kernel32.AllocConsole()
     sys.stdout = open("CONOUT$", "w")
 
+data = read_from_json()
+SLEEPBUTTON = int(data.get("text7", "0"))
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
     MenuItem("调试", console),
@@ -229,7 +234,6 @@ icon_thread.daemon = True
 icon_thread.start()
 # 设置要监听的端口和检查时间间隔
 SUN = False
-data = read_from_json()
 KEY1 = data.get("text1", "ctrl+b")
 KEY2 = data.get("text2", "ctrl+m")
 PORT = int(data.get("text3", "48000"))
@@ -238,7 +242,6 @@ TIMESLEEP1 =int(data.get("text5","0"))
 TIMESLEEP2 =int(data.get("text6","0"))
 
 #------------定时休眠---------------
-SLEEPBUTTON = int(data.get("text7", "0"))
 SLEEPTYPE = int(data.get("text9","0"))
 if SLEEPTYPE == 0:
     SLEEPTYPEM = "睡眠"
