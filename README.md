@@ -38,3 +38,29 @@
 该程序有什么用？：串流异常（如掉线）时雪藏美好瞬间，让您不错过游戏的精彩时刻。以及带来掌机般的便捷休眠体验。<p><hr>
 目前只支持sunshine，英伟达shine是不能用的（应该能用？但我没法运行shine来调试所以不能用<p>
 网易gv经测试得出端口是在串流断开后过一大会才会释放，并且每次连接端口号都不一样，故不做适配
+    
+<details> 
+    <summary>关于故障排查</summary>
+
+在后台任务栏图标右键菜单有个调试按钮，点开会弹出一个记录程序运行状况的黑窗口。以下是正常工作的记录
+<p>
+    
+![image](https://github.com/user-attachments/assets/bb6977e0-2035-41de-8114-9f74ba4929a1)
+若出现无法工作的状况，可对比调试窗口是否和上图记录一样
+<p><hr>
+案例分析一：用户安装了GameStream IPv6 Forwarder插件导致系统端口占用程序无法正常识别<p>
+分析过程：先打开调试窗口，发现端口被pid0所占用<p>
+
+![image](https://github.com/user-attachments/assets/da534e17-b327-4e43-93cb-f24b43f38bfb)
+然后win+r，输入cmd，在终端中输入netstat -ano | findstr 48000，发现有两个程序在占用端口<p>
+
+![image](https://github.com/user-attachments/assets/e3bcf511-18f5-4c64-91e6-3fd6dd85b723)
+接着在任务管理器中查询这两个pid，发现一个是sunshine另一个是这个插件<p>
+
+![image](https://github.com/user-attachments/assets/93bb6d0b-00b5-4853-9ad7-d7c0ff70e467)
+<p>
+解决方案：关闭该软件开机自启，停止使用该插件。（这个插件是为英伟达串流服务的，sunshine并不需要）
+
+
+
+</details>
