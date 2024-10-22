@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -112,6 +113,16 @@ def on_custom_input():
         if text3 == "" or text4 == "" or text5 == "" or text6 == "" or text7 == "" or text8 == "" or text9 == "" or text10 == "" or text11 == "" or text12 == "":
             messagebox.showerror("Error", "请输入完整数据")
             return
+        if text7 == '1':
+            if getattr(sys, 'frozen', False):
+                base_path = sys._MEIPASS  # 获取资源的临时目录
+            else:
+                base_path = os.path.dirname(__file__)
+            resource_path = os.path.join(base_path, 'sleep.exe')
+            try:
+                shutil.copy(resource_path, 'sleeptimerun.exe')
+            except:
+                print("复制失败")
         new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6,"text7": text7,"text8": text8,"text9": text9,"text10": text10,"text11": text11,"text12": text12}
         save_to_json(new_data)
         messagebox.showinfo("Data saved successfully!", "保存成功\n若选中了底下两个多选框导致的保存\n请重新打开设置查看更多配置项")
@@ -255,8 +266,15 @@ def shell_command(command):
         os.system(DATA3)
 # 检查端口是否被占用（重点）
 pid = 1145141919810
+pidtime = 0
+PIDTIME = (TIMENUM/INTERVAL)+3
 def check_port_usage():
-    global SUN,pid
+    global SUN,pid,pidtime
+    if pid != 1145141919810:
+        pidtime += 1
+        if pidtime > PIDTIME:
+            pid = 1145141919810
+            pidtime = 0
     port_in_use = False
     for conn in psutil.net_connections(kind='inet'):
         if conn.laddr.port == PORT:
@@ -294,8 +312,22 @@ def check_port_usage():
             except:
                 pass
             if SLEEPBUTTON == True:
-                process = subprocess.Popen(["python", "sleep.py", str(TIMENUM), str(SLEEPTYPE)])
-                pid = process.pid
+                try:
+                    process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)])
+                    pid = process.pid
+                except:
+                    toaster.show_toast("错误", "无法启动计时弹窗,将尝试部署sleeptimerun.exe", icon_path='',duration=0.01)
+                    if getattr(sys, 'frozen', False):
+                        base_path = sys._MEIPASS  # 获取资源的临时目录
+                    else:
+                        base_path = os.path.dirname(__file__)
+                    resource_path = os.path.join(base_path, 'sleep.exe')
+                    try:
+                        shutil.copy(resource_path, 'sleeptimerun.exe')
+                        process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)])
+                        pid = process.pid
+                    except Exception as e:
+                        toaster.show_toast("错误", f"复制失败{e}", icon_path='',duration=0.01)
                 print(f"启动的程序PID: {pid}")
             shell_command(1)
 def generate_report():
