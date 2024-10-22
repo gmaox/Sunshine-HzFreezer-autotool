@@ -1,6 +1,5 @@
 import json
 import os
-import queue
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -240,74 +239,9 @@ PORT = int(data.get("text3", "48000"))
 INTERVAL = int(data.get("text4","3"))
 TIMESLEEP1 =int(data.get("text5","0"))
 TIMESLEEP2 =int(data.get("text6","0"))
-
-#------------定时休眠---------------
 SLEEPTYPE = int(data.get("text9","0"))
-if SLEEPTYPE == 0:
-    SLEEPTYPEM = "睡眠"
-else:
-    SLEEPTYPEM = "休眠"
 TIMENUM = int(data.get("text8", "120"))
-def start_sleep():
-    if SUN == True:
-        return
-    windowsleeprun = threading.Thread(target=timeover)
-    windowsleeprun.daemon = True
-    windowsleeprun.start()
-def timeover():
-    try:
-        item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
-        print(f"获取的元素: {item}")
-    except queue.Empty:
-        print("队列是空的，无法获取元素。")
-    time.sleep(3)
-    window = tk.Tk()
-    window.wm_attributes('-topmost', 1)
-    window.title("")
-    screen_width = window.winfo_screenwidth()
-    screen_height = window.winfo_screenheight()
-    x = (screen_width // 2) - (200 // 2)
-    y = (screen_height // 2) - (100 // 2) - 150
-    window.geometry(f"200x100+{x}+{y}")
-    tk.Label(window, text=f"倒计时结束后\n系统将会尝试进行->{SLEEPTYPEM}").pack()
 
-    timenum = TIMENUM  # 初始计时值
-    label = tk.Label(window, text=f"{timenum}")  # 创建标签显示计时
-    label.pack()
-
-    # 定义一个函数关闭窗口
-    def on_closing():
-        window.after(0, window.destroy)
-
-    # 更新计时的函数
-    def update_timer():
-        nonlocal timenum
-        try:
-            item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
-            print(f"获取的元素: {item}")
-            on_closing()
-            time.sleep(1)
-        except queue.Empty:
-            pass
-        if timenum > 0:         # 计时未结束
-            timenum -= 1
-            label.config(text=f"{timenum}")  # 更新标签内容
-            window.after(1000, update_timer)  # 每1000毫秒（1秒）调用自己
-        else:
-            ctypes.windll.powrprof.SetSuspendState(SLEEPTYPE, 1, 0)
-            on_closing()
-            print("倒计时结束，开始休眠")
-            
-    
-    window.protocol("WM_DELETE_WINDOW", on_closing)# 绑定窗口关闭事件
-
-
-    tk.Button(window, text="单击按钮或关闭窗口\n取消休眠或睡眠", command=on_closing).pack()
-
-    update_timer()      # 开始计时
-    window.mainloop()   # 主循环
-
-#---------------------------------------------
 # 命令相关
 DATA1 = int(data.get("text10", "0"))
 DATA2 = data.get("text11", "0")
@@ -319,11 +253,10 @@ def shell_command(command):
         os.system(DATA2)
     else:
         os.system(DATA3)
-q = queue.Queue(maxsize=1)
-q2 = queue.Queue(maxsize=1)
 # 检查端口是否被占用（重点）
+pid = 1145141919810
 def check_port_usage():
-    global SUN
+    global SUN,pid
     port_in_use = False
     for conn in psutil.net_connections(kind='inet'):
         if conn.laddr.port == PORT:
@@ -340,9 +273,14 @@ def check_port_usage():
                         pass
                     if SLEEPBUTTON == True:
                         try:
-                            q.put_nowait(1)
-                        except:
-                            pass
+                            process = psutil.Process(pid)
+                            process.terminate()  # 发送终止信号
+                            process.wait()  # 等待进程结束
+                            print(f"已关闭 PID {pid} 的程序。")
+                        except psutil.NoSuchProcess:
+                            print(f"PID {pid} 的程序未找到。")
+                        except Exception as e:
+                            print(f"关闭程序时发生错误: {e}")
                     shell_command(0)
             break
     if not port_in_use:
@@ -356,10 +294,9 @@ def check_port_usage():
             except:
                 pass
             if SLEEPBUTTON == True:
-                try:
-                    q2.put_nowait(2)
-                except:
-                    pass
+                process = subprocess.Popen(["python", "sleep.py", str(TIMENUM), str(SLEEPTYPE)])
+                pid = process.pid
+                print(f"启动的程序PID: {pid}")
             shell_command(1)
 def generate_report():
     while True:
@@ -370,34 +307,11 @@ def generate_report():
 report_thread = threading.Thread(target=generate_report)
 report_thread.daemon = True
 report_thread.start()
+
 try:
-    item = q.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
-    print(f"获取的元素: {item}")
-    time.sleep(1)
-except queue.Empty:
-    pass
-# 主线程等待--分支
-if SLEEPBUTTON == True:
-    try:
-        while True:
-            try:
-                item = q2.get_nowait()  # 或者使用 q.get(timeout=<某个超时时间>)
-                print(f"获取的元nbfcjncvhcv素: {item}")
-                start_sleep()
-                time.sleep(1)
-            except queue.Empty:
-                pass        
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Program interrupted and stopping...")
-else:
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Program interrupted and stopping...")
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("Program interrupted and stopping...")
 
 
-
-
-#-------------------------400-------------------------
