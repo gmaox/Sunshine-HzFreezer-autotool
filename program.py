@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import signal
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -292,8 +293,15 @@ def check_port_usage():
                     if SLEEPBUTTON == True and pid != 1145141919810:
                         try:
                             process = psutil.Process(pid)
-                            process.terminate()  # 发送终止信号
-                            process.wait()  # 等待进程结束
+                            # process.terminate()
+                            # process.wait()
+                                    # 遍历所有子进程并终止它们
+                            for child in process.children(recursive=True):
+                                child.kill()
+                                print(f"已结束子进程 PID: {child.pid}")
+
+                            # 最后结束父进程
+                            process.kill()
                             print(f"已关闭 PID {pid} 的程序。")
                             pid = 1145141919810
                             pidtime = 0
@@ -317,7 +325,7 @@ def check_port_usage():
                 pass
             if SLEEPBUTTON == True:
                 try:
-                    process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)])
+                    process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)]) #, creationflags=subprocess.CREATE_NEW_CONSOLE
                     pid = process.pid
                 except:
                     toaster.show_toast("错误", "无法启动计时弹窗,将尝试部署sleeptimerun.exe", icon_path='',duration=0.01)
