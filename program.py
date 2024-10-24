@@ -289,7 +289,7 @@ def check_port_usage():
                         keyboard.press_and_release(KEY2)
                     except:
                         pass
-                    if SLEEPBUTTON == True:
+                    if SLEEPBUTTON == True and pid != 1145141919810:
                         try:
                             process = psutil.Process(pid)
                             process.terminate()  # 发送终止信号
