@@ -295,8 +295,12 @@ def check_port_usage():
                             process.terminate()  # 发送终止信号
                             process.wait()  # 等待进程结束
                             print(f"已关闭 PID {pid} 的程序。")
+                            pid = 1145141919810
+                            pidtime = 0
                         except psutil.NoSuchProcess:
                             print(f"PID {pid} 的程序未找到。")
+                            pid = 1145141919810
+                            pidtime = 0
                         except Exception as e:
                             print(f"关闭程序时发生错误: {e}")
                     shell_command(0)
