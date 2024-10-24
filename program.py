@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import signal
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
