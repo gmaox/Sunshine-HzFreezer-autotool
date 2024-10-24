@@ -21,6 +21,7 @@ def timeover():
     # 创建Tkinter窗口
     window = tk.Tk()
     window.title("")
+    window.attributes("-topmost", True)
     # 获取屏幕宽度和高度
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
