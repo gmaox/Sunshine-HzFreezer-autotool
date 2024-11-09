@@ -1,0 +1,7 @@
+PyInstaller: 6.6.0, contrib hooks: 2024.4
+Python: 3.8.5
+Platform: Windows-10-10.0.22621-SP0
+
+pyinstaller --onefile --add-data "favicon.ico;." --add-data "favicon_sleep.ico;." --add-data "sleep.exe;." -i icon.ico program.py --noconsole
+sleeptimerun.exe由sleeptimerun.py打包：
+pyinstaller -i favicon_sleep.ico sleeptimerun.py --noconsole
