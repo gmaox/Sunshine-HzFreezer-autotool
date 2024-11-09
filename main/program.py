@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -179,7 +178,7 @@ def on_custom_input():
 
     save_button = tk.Button(root, text="开启或关闭开机自启", command=startuprun)
     save_button.grid(row=10, column=0, columnspan=2)
-    tk.Label(root, text="不喜欢通知可以在win设置中关闭").grid(row=9, column=0, columnspan=2)
+    tk.Label(root, text="点击任务栏图标可以暂停侦听").grid(row=9, column=0, columnspan=2)
     tk.Label(root, text="\n输入后可测试：       \n").grid(row=2, column=0)
     test1_button = tk.Button(root, text="模拟冻结按键", command=lambda: keyboard.press_and_release(entry1.get()))
     test1_button.grid(row=2, column=0, columnspan=4)
@@ -220,20 +219,30 @@ def create_icon_image():
     else:
         return Image.open(os.path.join(os.path.dirname(__file__), "favicon.ico"))
 # 退出函数
-def on_quit(icon, item):
+def on_quit():
     os._exit(0)
 def github():
     webbrowser.open('https://github.com/gmaox/Sunshine-HzFreezer-autotool')
 def console():
     ctypes.windll.kernel32.AllocConsole()
     sys.stdout = open("CONOUT$", "w")
-
+ITEMCLICK=False
+def on_click(icon, item):
+    global ITEMCLICK
+    print("点击了菜单项：", item)
+    if ITEMCLICK:
+        ITEMCLICK=False
+        icon.icon=create_icon_image()
+    else:
+        ITEMCLICK=True
+        icon.icon=Image.open(os.path.join(os.path.dirname(__file__), "favicon_pause.ico"))
 data = read_from_json()
 SLEEPBUTTON = int(data.get("text7", "0"))
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
+    MenuItem('暂停程序', on_click, default=True ,visible=False),  
     MenuItem("调试", console),
-    MenuItem("github/使用说明", github),
+    MenuItem("Github/使用说明", github),
     MenuItem("程序设置", on_custom_input),
     MenuItem("Quit", on_quit)
 ))
@@ -270,7 +279,10 @@ pid = 1145141919810
 pidtime = 0
 PIDTIME = (TIMENUM/INTERVAL)+3
 def check_port_usage():
-    global SUN,pid,pidtime
+    global SUN,pid,pidtime,ITEMCLICK
+    if ITEMCLICK:
+        print("程序暂停，请点击任务栏图标继续运行")
+        return
     if pid != 1145141919810:
         pidtime += 1
         if pidtime > PIDTIME:
