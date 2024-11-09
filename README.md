@@ -1,7 +1,6 @@
 # 串流自动冻结小工具
 通过监听sunshine的UDP端口48000，实现串流暂停自动冻结，连接自动解冻<p>
 由于python keyboard库无法实现alt+win+c这种类型组合键（bug？），请手动修改并输入可行的组合键<p>
-**部分游戏（如原神）需要 *管理员身份* 运行此工具才能正常冻结！！**
 # 使用教程
 视频教程↓<p>
 <a href="http://b23.tv/ZOkEsk7">【串流小工具】自动冻结工具使用教程</a><p>
@@ -30,8 +29,7 @@
 <details> 
     <summary>方法三：每次想用的时候手动点击启动</summary>
 
-默认管理员启动更方便~
-![屏幕截图 2024-10-05 213147](https://github.com/user-attachments/assets/91a78059-1b69-462c-b605-fa90ba618de1)
+创建快捷方式或加入到游戏列表中
 
 </details>
 <p>
