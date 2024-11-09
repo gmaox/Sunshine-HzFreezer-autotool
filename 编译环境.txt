@@ -3,4 +3,5 @@ Python: 3.8.5
 Platform: Windows-10-10.0.22621-SP0
 
 pyinstaller --onefile --add-data "favicon.ico;." --add-data "favicon_sleep.ico;." --add-data "sleep.exe;." -i icon.ico program.py --noconsole
-sleep.exe由sleep.py单文件无控制台打包得来
+sleeptimerun.exe由sleeptimerun.py打包：
+pyinstaller -i favicon_sleep.ico sleeptimerun.py --noconsole
