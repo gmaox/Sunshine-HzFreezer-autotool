@@ -26,7 +26,6 @@ if ctypes.windll.shell32.IsUserAnAdmin()==0:
     toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
     ADMIN = False
 elif ctypes.windll.shell32.IsUserAnAdmin()==1:
-    time.sleep(3) #延时3秒，避免开机自启时出现错误
     toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
     ADMIN = True
 # 保存数据到 JSON 文件
@@ -165,7 +164,7 @@ def on_custom_input():
                 messagebox.showinfo('错误',f"任务创建失败: {e}")
 
         with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
-            file.write(f'@echo off\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
+            file.write(f'@echo off\nif "%1"=="hide" goto Begin\nstart mshta vbscript:createobject("wscript.shell").run("""%~0"" hide",0)(window.close)&&exit\n:Begin\ntimeout /t 4 /nobreak >nul\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
         task_name = "MysunAppAutoStart"  # 任务名称
         app_path = os.path.dirname(psutil.Process(os.getpid()).exe())+"\\MysunAppAutoStart.bat"  # 可执行文件路径
         
