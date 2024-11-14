@@ -22,11 +22,19 @@ if __name__ == '__main__':
     if win32api.GetLastError() > 0:
         toaster.show_toast("​不许调戏心海酱(￣Д ￣)", "​工具已在后台运行", icon_path='',duration=0.01)
         os._exit(0)
+def trytoastshow():
+    try:
+        toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
+        return
+    except:
+        time.sleep(5)
+        trytoastshow()
+
 if ctypes.windll.shell32.IsUserAnAdmin()==0:
     toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
     ADMIN = False
 elif ctypes.windll.shell32.IsUserAnAdmin()==1:
-    toaster.show_toast("​串流监听程序已启动", "右键系统托盘图标进行配置", icon_path='',duration=0.01)
+    trytoastshow()
     ADMIN = True
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
