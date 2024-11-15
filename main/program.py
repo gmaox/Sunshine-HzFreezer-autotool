@@ -244,14 +244,26 @@ def on_click(icon, item):
         ITEMCLICK=True
         icon.icon=Image.open(os.path.join(os.path.dirname(__file__), "favicon_pause.ico"))
 data = read_from_json()
+KEY1 = data.get("text1", "ctrl+b")
+KEY2 = data.get("text2", "ctrl+m")
 SLEEPBUTTON = int(data.get("text7", "0"))
+def on_pause():
+    time.sleep(0.8)
+    keyboard.press_and_release(KEY1)
+def on_resume():
+    time.sleep(0.8)
+    keyboard.press_and_release(KEY2)
 # 初始化托盘图标
 icon = Icon("test", create_icon_image(), menu=Menu(
-    MenuItem('暂停程序', on_click, default=True ,visible=False),  
+    MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
     MenuItem("程序设置", on_custom_input),
-    MenuItem("Quit", on_quit)
+    MenuItem("Quit", on_quit),
+    Menu.SEPARATOR,
+    MenuItem('              🧊', on_pause),
+    Menu.SEPARATOR,
+    MenuItem('              🌞', on_resume)
 ))
 def start_icon():
     icon.run()
@@ -261,8 +273,6 @@ icon_thread.daemon = True
 icon_thread.start()
 # 设置要监听的端口和检查时间间隔
 SUN = False
-KEY1 = data.get("text1", "ctrl+b")
-KEY2 = data.get("text2", "ctrl+m")
 PORT = int(data.get("text3", "48000"))
 INTERVAL = int(data.get("text4","3"))
 TIMESLEEP1 =int(data.get("text5","0"))
