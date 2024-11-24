@@ -270,7 +270,6 @@ def on_pause():
     time.sleep(0.8)
     keyboard.press_and_release(KEY1)
 def on_resume():
-    time.sleep(0.8)
     keyboard.press_and_release(KEY2)
 # 初始化托盘图标
 if TEXT13 == "1" and data.get("text14", "0") == "1":
@@ -348,18 +347,17 @@ def check_port_usage():
                     if SLEEPBUTTON == True and pid != 1145141919810:
                         try:
                             process = psutil.Process(pid)
-                            # process.terminate()
-                            # process.wait()
+                            if process.name() == "sleeptimerun.exe":
                                     # 遍历所有子进程并终止它们
-                            for child in process.children(recursive=True):
-                                child.kill()
-                                print(f"已结束子进程 PID: {child.pid}")
+                                for child in process.children(recursive=True):
+                                    child.kill()
+                                    print(f"已结束子进程 PID: {child.pid}")
 
-                            # 最后结束父进程
-                            process.kill()
-                            print(f"已关闭 PID {pid} 的程序。")
-                            pid = 1145141919810
-                            pidtime = 0
+                                # 最后结束父进程
+                                process.kill()
+                                print(f"已关闭 PID {pid} 的程序。")
+                                pid = 1145141919810
+                                pidtime = 0
                         except psutil.NoSuchProcess:
                             print(f"PID {pid} 的程序未找到。")
                             pid = 1145141919810
