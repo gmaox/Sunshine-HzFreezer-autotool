@@ -12,8 +12,10 @@ import sys
 import psutil
 import time
 import threading
+import win32con
 import win32event,win32api,time
 import ctypes
+import win32gui,win32process
 #初始化通知
 toaster = ToastNotifier()
 #确保只有一个程序运行
@@ -35,10 +37,10 @@ def read_from_json(filename="1.json"):
         with open(filename, "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
-        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令","text13": "1","text14": "0"}
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令","text13": "1","text14": "0","text15":"0"}
     except json.JSONDecodeError:
         print("Error decoding JSON.")
-        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令","text13": "1","text14": "0"}
+        return {"text1": "ctrl+b", "text2": "ctrl+m", "text3": "48000", "text4": "3", "text5": "0", "text6": "0","text7": "0"," text8": "120","text9": "0","text10": "0","text11": "输入冻结时的命令","text12": "输入解冻时的命令","text13": "1","text14": "0","text15":"0"}
 
 data = read_from_json()
 TEXT13 = data.get("text13", "0")
@@ -79,6 +81,7 @@ def on_custom_input():
     entry_var11 = tk.StringVar(value=data.get("text11", "输入冻结时的命令"))
     entry_var12 = tk.StringVar(value=data.get("text12", "输入解冻时的命令"))
     entry_var13 = tk.StringVar(value=data.get("text13", "1"))
+    entry_var15 = tk.StringVar(value=data.get("text15", "0"))
     tk.Label(root, text="冻结光标程序快捷键:").grid(row=0, column=0)
     entry1 = tk.Entry(root, textvariable=entry_var1)
     entry1.grid(row=0, column=1)
@@ -125,6 +128,7 @@ def on_custom_input():
             text11="输入冻结时的命令"
             text12="输入解冻时的命令"
         text13 = entry_var13.get()
+        text15 = entry_var15.get()
         if text3 == "" or text4 == "" or text5 == "" or text6 == "" or text7 == "" or text8 == "" or text9 == "" or text10 == "" or text11 == "" or text12 == "":
             messagebox.showerror("Error", "请输入完整数据")
             return
@@ -138,7 +142,7 @@ def on_custom_input():
                 # shutil.copy(resource_path, 'sleeptimerun.exe')
             # except:
                 # print("复制失败")
-        new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6,"text7": text7,"text8": text8,"text9": text9,"text10": text10,"text11": text11,"text12": text12,"text13": text13,"text14": "0"}
+        new_data = {"text1": text1, "text2": text2, "text3": text3, "text4": text4, "text5": text5, "text6": text6,"text7": text7,"text8": text8,"text9": text9,"text10": text10,"text11": text11,"text12": text12,"text13": text13,"text14": "0","text15": text15}
         save_to_json(new_data)
         messagebox.showinfo("Data saved successfully!", "保存成功\n程序即将重启")
         python = sys.executable
@@ -192,7 +196,7 @@ def on_custom_input():
             create_startup_task(task_name, app_path)# 创建新任务
 
     save_button = tk.Button(root, text="开启或关闭开机自启", command=startuprun)
-    save_button.grid(row=10, column=0, columnspan=2)
+    save_button.grid(row=10, column=0, sticky=tk.NS)
     #tk.Label(root, text="点击任务栏图标可以暂停侦听").grid(row=9, column=0, columnspan=2)
     tk.Label(root, text="\n输入后可测试：       \n").grid(row=2, column=0)
     test1_button = tk.Button(root, text="模拟冻结按键", command=lambda: keyboard.press_and_release(entry1.get()))
@@ -201,6 +205,8 @@ def on_custom_input():
     test2_button.grid(row=2, column=1)
     checkbox1 = tk.Checkbutton(root, text="启用休眠倒计时", variable=entry_var7, command=save_action)
     checkbox1.grid(row=11, column=0)
+    checkbox1 = tk.Checkbutton(root, text="仅前台全屏时冻结\n(主显示器全屏有效)", variable=entry_var15, command=save_action)
+    checkbox1.grid(row=10, column=1)
     if int(entry_var7.get())==1:
         tk.Label(root,text="断连后倒计时多久休眠？(秒)").grid(row=12, column=0)
         entry8 = tk.Entry(root, textvariable=entry_var8)
@@ -304,10 +310,13 @@ TIMESLEEP2 =int(data.get("text6","0"))
 SLEEPTYPE = int(data.get("text9","0"))
 TIMENUM = int(data.get("text8", "120"))
 
-# 命令相关
+# 自定义命令相关
 DATA1 = int(data.get("text10", "0"))
 DATA2 = data.get("text11", "0")
 DATA3 = data.get("text12", "0")
+
+FULLDATA = int(data.get("text15", "0"))
+FULL = 1
 def shell_command(command):
     if DATA1 == False:
         return
@@ -315,13 +324,51 @@ def shell_command(command):
         os.system(DATA2)
     else:
         os.system(DATA3)
+# 判断当前窗口是否全屏(当设置中开启时)
+def is_current_window_fullscreen():
+    try:
+        # 获取当前活动窗口句柄
+        hwnd = win32gui.GetForegroundWindow()
+        if not hwnd:
+            print("未找到活动窗口")
+            return False  # 未找到活动窗口
 
+        try:
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+            process = psutil.Process(pid)
+            exe_path = process.exe()
+            exe_name = os.path.basename(exe_path)
+        except e:
+            print(f"获取进程信息失败: {e}")
+        if exe_name == "explorer.exe":
+            print("当前窗口为桌面")
+            return False  # 忽略桌面
+        # 获取屏幕分辨率
+        screen_width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
+        screen_height = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+
+        # 获取窗口位置和大小
+        rect = win32gui.GetWindowRect(hwnd)
+        window_width = rect[2] - rect[0]
+        window_height = rect[3] - rect[1]
+
+        # 判断窗口是否全屏
+        if window_width == screen_width and window_height == screen_height:
+            print(f"当前窗口已全屏{exe_name}")
+            return True
+        else:
+            print(f"当前窗口非全屏 {exe_name} 窗口大小：{window_width} x {window_height} 屏幕分辨率：{screen_width} x {screen_height}")
+            return False
+    except Exception as e:
+        # 捕获异常，返回假
+        print(f"错误: {e}")
+        return False
 # 检查端口是否被占用（重点）
 pid = 1145141919810
 pidtime = 0
 PIDTIME = (TIMENUM/INTERVAL)+3
 def check_port_usage():
-    global SUN,pid,pidtime,ITEMCLICK
+    global SUN,pid,pidtime,ITEMCLICK,FULL
     if ITEMCLICK:
         print("程序暂停，请点击任务栏图标继续运行")
         return
@@ -338,12 +385,19 @@ def check_port_usage():
             if psutil.Process(conn.pid).name() == "sunshine.exe":
                 if SUN == False:
                     SUN = True
+                    # 仅全屏解冻判断
+                    if FULLDATA == 1 and FULL == 1:
+                        print("未冻结，跳过解冻")
+                        FULL = 0
+                        return
+                    # 模拟解冻
                     print("sunshine.exe is running--------------"+KEY2)
                     time.sleep(TIMESLEEP1)
                     try:
                         keyboard.press_and_release(KEY2)
                     except:
                         pass
+                    # 休眠倒计时
                     if SLEEPBUTTON == True and pid != 1145141919810:
                         try:
                             process = psutil.Process(pid)
@@ -364,36 +418,34 @@ def check_port_usage():
                             pidtime = 0
                         except Exception as e:
                             print(f"关闭程序时发生错误: {e}")
+                    #自定义命令
                     shell_command(0)
             break
     if not port_in_use:
         print(f"Port {PORT} is free.")
         if SUN == True:
             SUN = False
+            # 仅全屏冻结判断
+            if FULLDATA == 1:
+                if is_current_window_fullscreen() == False:
+                    FULL = 1
+                    return
+            # 模拟冻结
             print("sunshine.exe is close----------------"+KEY1)
             time.sleep(TIMESLEEP2)
             try:
                 keyboard.press_and_release(KEY1)
             except:
                 pass
+            # 休眠倒计时
             if SLEEPBUTTON == True:
                 try:
                     process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)]) #, creationflags=subprocess.CREATE_NEW_CONSOLE
                     pid = process.pid
                 except:
                     toaster.show_toast("错误", "无法启动计时弹窗,请检查sleeptimerun.exe是否被杀毒软件误杀", icon_path='',duration=0.01)
-                    # if getattr(sys, 'frozen', False):
-                    #     base_path = sys._MEIPASS  # 获取资源的临时目录
-                    # else:
-                    #     base_path = os.path.dirname(__file__)
-                    # resource_path = os.path.join(base_path, 'sleep.exe')
-                    # try:
-                    #     shutil.copy(resource_path, 'sleeptimerun.exe')
-                    #     process = subprocess.Popen(["sleeptimerun.exe", str(TIMENUM), str(SLEEPTYPE)])
-                    #     pid = process.pid
-                    # except Exception as e:
-                    #     toaster.show_toast("错误", f"复制失败{e}", icon_path='',duration=0.01)
                 print(f"启动的程序PID: {pid}")
+            #自定义命令
             shell_command(1)
 def generate_report():
     while True:
