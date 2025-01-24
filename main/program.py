@@ -65,9 +65,13 @@ def save_to_json(data, filename="1.json"):
 root = None
 # 自定义窗口的回调函数
 def on_custom_input():
-    global SLEEPVALUE,entry_var8
+    global SLEEPVALUE, entry_var8, root
+    if root is not None and root.winfo_exists():
+        root.lift()
+        root.focus_force()
+        return
     root = tk.Tk()
-    root.title("若无法输入请尝试选中窗口")
+    root.title("自动冻结设置")
     entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
     entry_var2 = tk.StringVar(value=data.get("text2", "ctrl+m"))
     entry_var3 = tk.StringVar(value=data.get("text3", "48000"))
@@ -234,7 +238,13 @@ def on_custom_input():
             entry12.grid(row=12, column=1)
     checkbox1 = tk.Checkbutton(root, text="点击系统托盘暂停状态是否继承至下次启动", variable=entry_var13, command=save_action)
     checkbox1.grid(row=9, column=0, columnspan=2)
+    root.protocol("WM_DELETE_WINDOW", lambda: (root.destroy(), globals().update(root=None)))
+    # 调度焦点设置
+    root.after(1000, delayed_focus)
     root.mainloop()
+def delayed_focus():
+    root.lift()
+    root.focus_force()
 # 从 favicon.ico 加载图标
 def create_icon_image():
     if SLEEPBUTTON == True:
@@ -288,7 +298,7 @@ icon = Icon("test", ICONIMAGE, menu=Menu(
     MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
-    MenuItem("程序设置", on_custom_input),
+    MenuItem("程序设置",on_custom_input),
     MenuItem("Quit", on_quit),
     Menu.SEPARATOR,
     MenuItem('              🧊', on_pause),
@@ -462,5 +472,3 @@ try:
         time.sleep(1)
 except KeyboardInterrupt:
     print("Program interrupted and stopping...")
-
-
