@@ -1,6 +1,8 @@
 # 串流自动冻结小工具
 通过监听sunshine的UDP端口48000，实现串流暂停自动冻结，连接自动解冻<p>
-由于python keyboard库无法实现alt+win+c这种类型组合键（bug？），请手动修改并输入可行的组合键<p>
+
+<b>由于系统限制，由软件发送的 alt+win+x 类型组合键无法被雪藏捕获，请手动修改为可行的组合键<p>（例如ctrl+x，ctrl+alt+x，ctrl+shift+x等等，有意思的是，ctrl+alt+win是可行的）</b><p>
+
 # 使用教程
 视频教程↓<p>
 <a href="http://b23.tv/ZOkEsk7">【串流小工具】自动冻结工具使用教程</a><p>
