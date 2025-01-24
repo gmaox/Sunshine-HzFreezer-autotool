@@ -240,7 +240,7 @@ def on_custom_input():
     checkbox1.grid(row=9, column=0, columnspan=2)
     root.protocol("WM_DELETE_WINDOW", lambda: (root.destroy(), globals().update(root=None)))
     # 调度焦点设置
-    root.after(1000, delayed_focus)
+    root.after(500, delayed_focus)
     root.mainloop()
 def delayed_focus():
     root.lift()
@@ -298,7 +298,7 @@ icon = Icon("test", ICONIMAGE, menu=Menu(
     MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
-    MenuItem("程序设置",on_custom_input),
+    MenuItem("程序设置", on_custom_input),
     MenuItem("Quit", on_quit),
     Menu.SEPARATOR,
     MenuItem('              🧊', on_pause),
