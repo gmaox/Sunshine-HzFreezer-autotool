@@ -4,10 +4,10 @@
 <b>由于系统限制，由软件发送的 alt+win+x 类型组合键无法被雪藏捕获，请手动修改为可行的组合键<p>（例如ctrl+x，ctrl+alt+x，ctrl+shift+x等等，有意思的是，ctrl+alt+win是可行的）</b><p>
 推荐使用v2.17雪藏，修复了快捷键偶现失灵问题<p>
 <h2>使用教程</h2>
-视频教程↓<p>
+视频教程：
 <a href="http://b23.tv/ZOkEsk7">【串流小工具】自动冻结工具使用教程</a><p>
-文字教程↓<p>
-0--首先你得先安装雪藏。。<p>
+文字教程：↓<p>
+0--首先你得先安装雪藏。。
 雪藏链接：https://github.com/superDMS/HsFreezer-Hidden-in-the-snow-/<p>
 <details>
 <summary>
