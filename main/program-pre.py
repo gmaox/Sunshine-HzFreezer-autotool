@@ -18,6 +18,14 @@ import ctypes
 import win32gui,win32process
 #初始化通知
 toaster = ToastNotifier()
+#确保程序运行路径正确
+if getattr(sys, 'frozen', False):
+    # 如果是打包后的可执行文件
+    program_directory = os.path.dirname(sys.executable)
+else:
+    # 如果是脚本运行
+    program_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(program_directory)
 #确保只有一个程序运行
 if not (len(sys.argv) > 1 and sys.argv[1] == '--settings'):
     if __name__ == '__main__':
@@ -176,9 +184,10 @@ def create_settings_window():
     save_button = tk.Button(root, text="--保存全部修改--", command=save_action)
     save_button.grid(row=8, column=0, columnspan=2)
     def startuprun():
-        if ADMIN==False:
+        if ctypes.windll.shell32.IsUserAnAdmin()==0:
             messagebox.showerror("错误", "请使用管理员权限设置开机自启")
             return
+
         def check_task_exists(task_name):
             """检查任务是否存在"""
             command = ['schtasks', '/query', '/tn', task_name]
@@ -192,8 +201,11 @@ def create_settings_window():
         def delete_task(task_name):
             """删除指定的任务"""
             command = ['schtasks', '/delete', '/tn', task_name, '/f']
-            subprocess.run(command, check=True)
-            messagebox.showinfo('删除成功',f"任务 {task_name} 已删除。")
+            try:
+                subprocess.run(command, check=True)
+                messagebox.showinfo('删除成功', f"任务 {task_name} 已删除。")
+            except subprocess.CalledProcessError as e:
+                messagebox.showerror('错误', f"任务删除失败: {e}")
 
         def create_startup_task(task_name, app_path):
             """创建开机自启任务"""
@@ -205,21 +217,23 @@ def create_settings_window():
             try:
                 # 调用 schtasks 命令
                 subprocess.run(command, check=True)
-                messagebox.showinfo('创建成功',f"开机自启任务 {task_name} 创建成功！")
+                messagebox.showinfo('创建成功', f"开机自启任务 {task_name} 创建成功！\n (此电脑右键-管理-展开任务计划程序-点击任务计划程序库-MysunAppAutoStart即为该程序的自启任务)")
             except subprocess.CalledProcessError as e:
-                messagebox.showinfo('错误',f"任务创建失败: {e}")
+                messagebox.showerror('错误', f"任务创建失败: {e}")
 
-        with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
-            file.write(f'@echo off\nif "%1"=="hide" goto Begin\nstart mshta vbscript:createobject("wscript.shell").run("""%~0"" hide",0)(window.close)&&exit\n:Begin\ntimeout /t 4 /nobreak >nul\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
-        task_name = "MysunAppAutoStart"  # 任务名称
-        app_path = os.path.dirname(psutil.Process(os.getpid()).exe())+"\\MysunAppAutoStart.bat"  # 可执行文件路径
-        
+        try:
+            with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
+                file.write(f'@echo off\nif "%1"=="hide" goto Begin\nstart mshta vbscript:createobject("wscript.shell").run("""%~0"" hide",0)(window.close)&&exit\n:Begin\ntimeout /t 4 /nobreak >nul\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
+            task_name = "MysunAppAutoStart"  # 任务名称
+            app_path = os.path.dirname(psutil.Process(os.getpid()).exe()) + "\\MysunAppAutoStart.bat"  # 可执行文件路径
 
-        # 检查任务是否存在
-        if check_task_exists(task_name):
-            delete_task(task_name)  # 删除现有任务
-        else:
-            create_startup_task(task_name, app_path)# 创建新任务
+            # 检查任务是否存在
+            if check_task_exists(task_name):
+                delete_task(task_name)  # 删除现有任务
+            else:
+                create_startup_task(task_name, app_path)  # 创建新任务
+        except Exception as e:
+            messagebox.showerror('错误', f"发生错误: {e}")
 
     save_button = tk.Button(root, text="开启或关闭开机自启", command=startuprun)
     save_button.grid(row=10, column=0, sticky=tk.NS)
@@ -328,7 +342,7 @@ if TEXT13 == "1" and data.get("text14", "0") == "1":
 else:
     ITEMCLICK=False
     ICONIMAGE = create_icon_image()
-icon = Icon("test", ICONIMAGE, "串流自动冻结小工具(v0.1.8 Beta)", menu=Menu(
+icon = Icon("test", ICONIMAGE, "串流自动冻结小工具(v0.1.8 Beta2)", menu=Menu(
     MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
