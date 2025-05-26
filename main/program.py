@@ -16,14 +16,35 @@ import win32con
 import win32event,win32api,time
 import ctypes
 import win32gui,win32process
+#C:\Users\86150\AppData\Local\Programs\Python\Python38\python.exe -m PyInstaller --add-data "favicon.ico;." --add-data "favicon_sleep.ico;." --add-data "favicon_pause.ico;." --uac-admin -i icon.ico program.py --noconsole
 #初始化通知
 toaster = ToastNotifier()
+#确保程序运行路径正确
+if getattr(sys, 'frozen', False):
+    # 如果是打包后的可执行文件
+    program_directory = os.path.dirname(sys.executable)
+else:
+    # 如果是脚本运行
+    program_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(program_directory)
 #确保只有一个程序运行
-if __name__ == '__main__':
-    mutex = win32event.CreateMutex(None, False, 'Sunshine-HzFreezer-autotool')
-    if win32api.GetLastError() > 0:
-        toaster.show_toast("​不许调戏心海酱(￣Д ￣)", "​工具已在后台运行", icon_path='',duration=0.01)
-        os._exit(0)
+if not (len(sys.argv) > 1 and sys.argv[1] == '--settings'):
+    if __name__ == '__main__':
+        mutex = win32event.CreateMutex(None, False, 'Sunshine-HzFreezer-autotool')
+        if win32api.GetLastError() > 0:
+            if not (len(sys.argv) > 1 and sys.argv[1] == '--restart'):
+                toaster.show_toast("​不许调戏心海酱(￣Д ￣)", "​工具已在后台运行", icon_path='',duration=0.01)
+                os._exit(0)
+            else:
+                current_pid = os.getpid()
+                for proc in psutil.process_iter(['pid', 'name', 'exe']):
+                    if proc.info['exe'] == sys.executable and proc.info['pid'] != current_pid:
+                        proc.terminate()
+                        proc.wait()
+
+else:
+    # 设置窗口模式，跳过互斥锁检查
+    pass
 def trytoastshow():
     try:
         toaster.show_toast("​串流监听程序已启动", f"{TOASTPLUS}右键系统托盘图标进行配置", icon_path='',duration=0.01)
@@ -48,12 +69,13 @@ if TEXT13 == "1" and int(data.get("text14", "0")) == 1:
     TOASTPLUS = "但是是暂停状态，请点击系统托盘图标进行恢复\n"
 else:
     TOASTPLUS = ""
-if ctypes.windll.shell32.IsUserAnAdmin()==0:
-    toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
-    ADMIN = False
-elif ctypes.windll.shell32.IsUserAnAdmin()==1:
-    trytoastshow()
-    ADMIN = True
+if not (len(sys.argv) > 1 and sys.argv[1] == '--settings'):
+    if ctypes.windll.shell32.IsUserAnAdmin()==0:
+        toaster.show_toast("​串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置", icon_path='',duration=0.01)
+        ADMIN = False
+    elif ctypes.windll.shell32.IsUserAnAdmin()==1:
+        trytoastshow()
+        ADMIN = True
 # 保存数据到 JSON 文件
 def save_to_json(data, filename="1.json"):
     try:
@@ -64,12 +86,7 @@ def save_to_json(data, filename="1.json"):
         messagebox.showerror("Error", f"Failed to save data: {e}")
 root = None
 # 自定义窗口的回调函数
-def on_custom_input():
-    global SLEEPVALUE, entry_var8, root
-    if root is not None and root.winfo_exists():
-        root.lift()
-        root.focus_force()
-        return
+def create_settings_window():
     root = tk.Tk()
     root.title("自动冻结设置")
     entry_var1 = tk.StringVar(value=data.get("text1", "ctrl+b"))
@@ -150,13 +167,28 @@ def on_custom_input():
         save_to_json(new_data)
         messagebox.showinfo("Data saved successfully!", "保存成功\n程序即将重启")
         python = sys.executable
-        os.execl(python, python, *sys.argv)
+        # 结束主进程
+        #parent_pid = os.getpid()
+        #parent_process = psutil.Process(parent_pid)
+        #for child in parent_process.children(recursive=True):
+        #    child.terminate()
+        #parent_process.terminate()
+        # 重启程序
+        #os.execl(python, python, *sys.argv)
+        #with open("restart.vbs", "w") as f:
+        #    f.write('WScript.Sleep 1000\n')  # 等待1秒
+        #    f.write(f'Set objShell = CreateObject("WScript.Shell")\n')
+        #    f.write(f'objShell.Run "{python} {' '.join(sys.argv)}"\n')
+        #os.system("wscript restart.vbs")
+        subprocess.Popen([sys.executable, '--restart'])
+        os._exit(0)
     save_button = tk.Button(root, text="--保存全部修改--", command=save_action)
     save_button.grid(row=8, column=0, columnspan=2)
     def startuprun():
-        if ADMIN==False:
+        if ctypes.windll.shell32.IsUserAnAdmin()==0:
             messagebox.showerror("错误", "请使用管理员权限设置开机自启")
             return
+
         def check_task_exists(task_name):
             """检查任务是否存在"""
             command = ['schtasks', '/query', '/tn', task_name]
@@ -170,8 +202,11 @@ def on_custom_input():
         def delete_task(task_name):
             """删除指定的任务"""
             command = ['schtasks', '/delete', '/tn', task_name, '/f']
-            subprocess.run(command, check=True)
-            messagebox.showinfo('删除成功',f"任务 {task_name} 已删除。")
+            try:
+                subprocess.run(command, check=True)
+                messagebox.showinfo('删除成功', f"任务 {task_name} 已删除。")
+            except subprocess.CalledProcessError as e:
+                messagebox.showerror('错误', f"任务删除失败: {e}")
 
         def create_startup_task(task_name, app_path):
             """创建开机自启任务"""
@@ -183,21 +218,23 @@ def on_custom_input():
             try:
                 # 调用 schtasks 命令
                 subprocess.run(command, check=True)
-                messagebox.showinfo('创建成功',f"开机自启任务 {task_name} 创建成功！")
+                messagebox.showinfo('创建成功', f"开机自启任务 {task_name} 创建成功！\n (此电脑右键-管理-展开任务计划程序-点击任务计划程序库-MysunAppAutoStart即为该程序的自启任务)")
             except subprocess.CalledProcessError as e:
-                messagebox.showinfo('错误',f"任务创建失败: {e}")
+                messagebox.showerror('错误', f"任务创建失败: {e}")
 
-        with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
-            file.write(f'@echo off\nif "%1"=="hide" goto Begin\nstart mshta vbscript:createobject("wscript.shell").run("""%~0"" hide",0)(window.close)&&exit\n:Begin\ntimeout /t 4 /nobreak >nul\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
-        task_name = "MysunAppAutoStart"  # 任务名称
-        app_path = os.path.dirname(psutil.Process(os.getpid()).exe())+"\\MysunAppAutoStart.bat"  # 可执行文件路径
-        
+        try:
+            with open("MysunAppAutoStart.bat", "w", encoding="utf-8") as file:
+                file.write(f'@echo off\nchcp 65001\nif "%1"=="hide" goto Begin\nstart mshta vbscript:createobject("wscript.shell").run("""%~0"" hide",0)(window.close)&&exit\n:Begin\ntimeout /t 4 /nobreak >nul\ncd /d "{os.path.dirname(psutil.Process(os.getpid()).exe())}"\nstart {os.path.basename(psutil.Process(os.getpid()).exe())}')
+            task_name = "MysunAppAutoStart"  # 任务名称
+            app_path = os.path.dirname(psutil.Process(os.getpid()).exe()) + "\\MysunAppAutoStart.bat"  # 可执行文件路径
 
-        # 检查任务是否存在
-        if check_task_exists(task_name):
-            delete_task(task_name)  # 删除现有任务
-        else:
-            create_startup_task(task_name, app_path)# 创建新任务
+            # 检查任务是否存在
+            if check_task_exists(task_name):
+                delete_task(task_name)  # 删除现有任务
+            else:
+                create_startup_task(task_name, app_path)  # 创建新任务
+        except Exception as e:
+            messagebox.showerror('错误', f"发生错误: {e}")
 
     save_button = tk.Button(root, text="开启或关闭开机自启", command=startuprun)
     save_button.grid(row=10, column=0, sticky=tk.NS)
@@ -288,13 +325,25 @@ def on_pause():
 def on_resume():
     keyboard.press_and_release(KEY2)
 # 初始化托盘图标
+def on_custom_input():
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        if proc.info['name'] == 'python.exe' and '--settings' in proc.info['cmdline']:
+            messagebox.showinfo("提示", "设置窗口已在运行")
+            return
+    try:
+        # 使用subprocess启动新的程序实例来显示设置窗口
+        subprocess.Popen([sys.executable, '--settings'])
+    except Exception as e:
+        print(f"启动设置窗口失败: {e}")
+        messagebox.showerror("错误", f"无法打开设置窗口: {e}")
+
 if TEXT13 == "1" and data.get("text14", "0") == "1":
     ITEMCLICK=True
     ICONIMAGE = Image.open(os.path.join(os.path.dirname(__file__), "favicon_pause.ico"))
 else:
     ITEMCLICK=False
     ICONIMAGE = create_icon_image()
-icon = Icon("test", ICONIMAGE, menu=Menu(
+icon = Icon("test", ICONIMAGE, "串流自动冻结小工具(v0.1.8)", menu=Menu(
     MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
@@ -308,9 +357,10 @@ icon = Icon("test", ICONIMAGE, menu=Menu(
 def start_icon():
     icon.run()
 # 启动托盘图标线程
-icon_thread = threading.Thread(target=start_icon)
-icon_thread.daemon = True
-icon_thread.start()
+if not (len(sys.argv) > 1 and sys.argv[1] == '--settings'):
+    icon_thread = threading.Thread(target=start_icon)
+    icon_thread.daemon = True
+    icon_thread.start()
 # 设置要监听的端口和检查时间间隔
 SUN = False
 PORT = int(data.get("text3", "48000"))
@@ -463,11 +513,16 @@ def generate_report():
         check_port_usage()
         time.sleep(INTERVAL)
 # 启动定时生成报告的线程
-report_thread = threading.Thread(target=generate_report)
-report_thread.daemon = True
-report_thread.start()
+if not (len(sys.argv) > 1 and sys.argv[1] == '--settings'):
+    report_thread = threading.Thread(target=generate_report)
+    report_thread.daemon = True
+    report_thread.start()
 
 try:
+    if len(sys.argv) > 1 and sys.argv[1] == '--settings':
+        # 如果是以设置窗口模式启动，直接显示设置窗口
+        create_settings_window()
+        sys.exit(0)
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
