@@ -343,7 +343,7 @@ if TEXT13 == "1" and data.get("text14", "0") == "1":
 else:
     ITEMCLICK=False
     ICONIMAGE = create_icon_image()
-icon = Icon("test", ICONIMAGE, "串流自动冻结小工具(v0.1.8)", menu=Menu(
+icon = Icon("test", ICONIMAGE, "串流自动冻结小工具(v0.1.9)", menu=Menu(
     MenuItem('暂停程序', on_click, default=True ,visible=False), 
     MenuItem("调试", console),
     MenuItem("Github/使用说明", github),
@@ -442,7 +442,7 @@ def check_port_usage():
         if conn.laddr.port == PORT:
             port_in_use = True
             print(f"Port {PORT} is in use by PID {conn.pid}, program: {psutil.Process(conn.pid).name()}")
-            if psutil.Process(conn.pid).name() == "sunshine.exe":
+            if psutil.Process(conn.pid).name().lower() == "sunshine.exe":
                 if SUN == False:
                     SUN = True
                     # 仅全屏解冻判断
