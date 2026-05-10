@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -61,8 +61,9 @@ namespace SunshineFreezer
             isSettingsMode = args.Contains("--settings");
 
             mutex = new Mutex(true, "Sunshine-HzFreezer-autotool", out bool created);
-            if (!created && !isSettingsMode)
+            if (!created)
             {
+                // 已有实例在运行，直接退出
                 Application.Exit();
                 return;
             }
@@ -302,7 +303,7 @@ namespace SunshineFreezer
 
             Process p = new Process();
             p.StartInfo.FileName = pssuspendPath;
-            p.StartInfo.Arguments = $"-p {pid}";
+            p.StartInfo.Arguments = $"{pid}";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.CreateNoWindow = true;
             p.Start();
