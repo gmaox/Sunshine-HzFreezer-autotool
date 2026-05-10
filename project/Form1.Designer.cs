@@ -307,7 +307,6 @@
         private System.Windows.Forms.TextBox textBox7;
         private System.Windows.Forms.CheckBox checkBox3;
         private System.Windows.Forms.CheckBox checkBox4;
-        private System.Windows.Forms.CheckBox checkBoxStartup;
         private System.Windows.Forms.Button buttonSave;
         private System.Windows.Forms.PictureBox pictureBoxPortStatus;
         private System.Windows.Forms.Label labelPortStatus;

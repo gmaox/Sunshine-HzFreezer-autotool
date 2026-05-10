@@ -129,14 +129,22 @@ namespace SunshineFreezer
 
         private void FreezeForegroundButton_Click(object sender, EventArgs e)
         {
+            // 防止重复点击
+            if (isFreezing || winEventHook != IntPtr.Zero)
+            {
+                return;
+            }
             freezeForegroundButton.Enabled = false;
             isFreezing = true;
             currentProcessId = System.Diagnostics.Process.GetCurrentProcess().Id;
             WinEventDelegate dele = new WinEventDelegate(WinEventHook);
-            GC.KeepAlive(dele);
+            // 保持委托引用，防止被垃圾回收
+            this.dele = dele;
             winEventHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0, WINEVENT_OUTOFCONTEXT);
             ShowTooltip("请点击要冻结的窗口");
         }
+
+        private WinEventDelegate dele; // 保持委托引用
 
         private void PauseButton_Click(object sender, EventArgs e)
         {

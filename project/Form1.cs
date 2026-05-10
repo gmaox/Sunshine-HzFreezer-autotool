@@ -310,7 +310,12 @@ namespace SunshineFreezer
             p.WaitForExit();
             isFrozen = true;
             frozenPid = pid;
-            SetTrayIcon("favicon_pause.ico");
+            
+            // 只有自动冻结时才改变托盘图标，手动冻结不改变图标
+            if (!isManualFreeze)
+            {
+                SetTrayIcon("favicon_pause.ico");
+            }
 
             // 记录历史
             if (!string.IsNullOrEmpty(processName))
@@ -347,7 +352,12 @@ namespace SunshineFreezer
             p.WaitForExit();
             isFrozen = false;
             frozenPid = 0;
-            SetTrayIcon("favicon.ico");
+            
+            // 只有自动解冻时才恢复托盘图标，手动解冻不改变图标
+            if (!isManualFreeze)
+            {
+                SetTrayIcon("favicon.ico");
+            }
 
             // 记录历史
             if (!string.IsNullOrEmpty(processName))
