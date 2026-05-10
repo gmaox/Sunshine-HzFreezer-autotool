@@ -61,10 +61,10 @@ namespace SunshineFreezer
             isSettingsMode = args.Contains("--settings");
 
             mutex = new Mutex(true, "Sunshine-HzFreezer-autotool", out bool created);
-            if (!created)
+            if (!created && !isSettingsMode)
             {
                 // 已有实例在运行，直接退出
-                Application.Exit();
+                Environment.Exit(0);
                 return;
             }
 
