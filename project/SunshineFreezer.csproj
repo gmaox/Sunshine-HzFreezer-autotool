@@ -62,7 +62,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <ApplicationIcon>res\favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>
@@ -129,16 +129,16 @@
     <None Include="SunshineFreezer_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="favicon.ico">
+    <Content Include="res\favicon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="favicon_pause.ico">
+    <Content Include="res\favicon_pause.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="favicon_sleep.ico">
+    <Content Include="res\favicon_sleep.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="pssuspend64.exe">
+    <Content Include="res\pssuspend64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="App.config" />

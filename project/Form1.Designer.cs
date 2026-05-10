@@ -32,10 +32,6 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.textBox5 = new System.Windows.Forms.TextBox();
@@ -61,7 +57,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(200, 20);
             this.label1.TabIndex = 0;
-            this.label1.Text = "端口号 (默认48000,不懂别改):";
+            this.label1.Text = "端口号 (默认48000,默认即可):";
             // 
             // textBox1
             // 
@@ -77,7 +73,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(200, 20);
             this.label2.TabIndex = 2;
-            this.label2.Text = "检查时间间隔(秒):";
+            this.label2.Text = "检查时间间隔(秒，默认3):";
             // 
             // textBox2
             // 
@@ -86,47 +82,17 @@
             this.textBox2.Size = new System.Drawing.Size(100, 21);
             this.textBox2.TabIndex = 3;
             // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(12, 99);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(200, 20);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "睡眠前等待时间(秒):";
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(222, 99);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 21);
-            this.textBox3.TabIndex = 5;
-            // 
-            // label4
-            // 
-            this.label4.Location = new System.Drawing.Point(12, 129);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(200, 20);
-            this.label4.TabIndex = 6;
-            this.label4.Text = "睡眠后等待时间(秒):";
-            // 
-            // textBox4
-            // 
-            this.textBox4.Location = new System.Drawing.Point(222, 129);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(100, 21);
-            this.textBox4.TabIndex = 7;
-            // 
             // checkBox1
             // 
-            this.checkBox1.Location = new System.Drawing.Point(12, 159);
+            this.checkBox1.Location = new System.Drawing.Point(15, 92);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(200, 20);
             this.checkBox1.TabIndex = 8;
-            this.checkBox1.Text = "冻结后自动睡眠";
+            this.checkBox1.Text = "自动冻结后开启睡眠倒计时";
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(12, 189);
+            this.label5.Location = new System.Drawing.Point(15, 122);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(200, 20);
             this.label5.TabIndex = 9;
@@ -134,14 +100,14 @@
             // 
             // textBox5
             // 
-            this.textBox5.Location = new System.Drawing.Point(222, 189);
+            this.textBox5.Location = new System.Drawing.Point(225, 122);
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(100, 21);
             this.textBox5.TabIndex = 10;
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(12, 219);
+            this.label6.Location = new System.Drawing.Point(15, 152);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(200, 20);
             this.label6.TabIndex = 11;
@@ -153,52 +119,52 @@
             this.comboBox1.Items.AddRange(new object[] {
             "睡眠",
             "休眠"});
-            this.comboBox1.Location = new System.Drawing.Point(222, 219);
+            this.comboBox1.Location = new System.Drawing.Point(225, 152);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(100, 20);
             this.comboBox1.TabIndex = 12;
             // 
             // checkBox2
             // 
-            this.checkBox2.Location = new System.Drawing.Point(12, 249);
+            this.checkBox2.Location = new System.Drawing.Point(15, 182);
             this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(200, 20);
+            this.checkBox2.Size = new System.Drawing.Size(229, 20);
             this.checkBox2.TabIndex = 13;
-            this.checkBox2.Text = "启用自定义命令";
+            this.checkBox2.Text = "启用自定义冻结解冻时附加命令↓";
             // 
             // label7
             // 
-            this.label7.Location = new System.Drawing.Point(12, 279);
+            this.label7.Location = new System.Drawing.Point(15, 212);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(200, 20);
+            this.label7.Size = new System.Drawing.Size(80, 20);
             this.label7.TabIndex = 14;
             this.label7.Text = "冻结时命令:";
             // 
             // textBox6
             // 
-            this.textBox6.Location = new System.Drawing.Point(222, 279);
+            this.textBox6.Location = new System.Drawing.Point(101, 209);
             this.textBox6.Name = "textBox6";
-            this.textBox6.Size = new System.Drawing.Size(300, 21);
+            this.textBox6.Size = new System.Drawing.Size(224, 21);
             this.textBox6.TabIndex = 15;
             // 
             // label8
             // 
-            this.label8.Location = new System.Drawing.Point(12, 309);
+            this.label8.Location = new System.Drawing.Point(15, 242);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(200, 20);
+            this.label8.Size = new System.Drawing.Size(80, 20);
             this.label8.TabIndex = 16;
             this.label8.Text = "解冻时命令:";
             // 
             // textBox7
             // 
-            this.textBox7.Location = new System.Drawing.Point(222, 309);
+            this.textBox7.Location = new System.Drawing.Point(101, 236);
             this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(300, 21);
+            this.textBox7.Size = new System.Drawing.Size(224, 21);
             this.textBox7.TabIndex = 17;
             // 
             // checkBox3
             // 
-            this.checkBox3.Location = new System.Drawing.Point(12, 339);
+            this.checkBox3.Location = new System.Drawing.Point(15, 272);
             this.checkBox3.Name = "checkBox3";
             this.checkBox3.Size = new System.Drawing.Size(133, 20);
             this.checkBox3.TabIndex = 18;
@@ -206,17 +172,17 @@
             // 
             // checkBox4
             // 
-            this.checkBox4.Location = new System.Drawing.Point(12, 369);
+            this.checkBox4.Location = new System.Drawing.Point(15, 302);
             this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(133, 20);
+            this.checkBox4.Size = new System.Drawing.Size(176, 20);
             this.checkBox4.TabIndex = 19;
-            this.checkBox4.Text = "仅在全屏时冻结";
+            this.checkBox4.Text = "仅全屏冻结(强烈推荐开)";
             // 
             // buttonSave
             // 
-            this.buttonSave.Location = new System.Drawing.Point(168, 339);
+            this.buttonSave.Location = new System.Drawing.Point(197, 272);
             this.buttonSave.Name = "buttonSave";
-            this.buttonSave.Size = new System.Drawing.Size(152, 50);
+            this.buttonSave.Size = new System.Drawing.Size(126, 50);
             this.buttonSave.TabIndex = 21;
             this.buttonSave.Text = "保存设置";
             this.buttonSave.Click += new System.EventHandler(this.buttonSave_Click);
@@ -235,7 +201,7 @@
             this.labelPortStatus.AutoSize = true;
             this.labelPortStatus.Location = new System.Drawing.Point(116, 39);
             this.labelPortStatus.Name = "labelPortStatus";
-            this.labelPortStatus.Size = new System.Drawing.Size(29, 12);
+            this.labelPortStatus.Size = new System.Drawing.Size(33, 13);
             this.labelPortStatus.TabIndex = 23;
             this.labelPortStatus.Text = "空闲";
             // 
@@ -252,16 +218,12 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(333, 402);
+            this.ClientSize = new System.Drawing.Size(333, 340);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.textBox4);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.textBox5);
@@ -291,10 +253,6 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBox5;

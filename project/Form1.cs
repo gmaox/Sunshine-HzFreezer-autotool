@@ -29,6 +29,17 @@ namespace SunshineFreezer
         [DllImport("user32.dll")]
         private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_MINIMIZE = 6;
+
         [DllImport("kernel32.dll")]
         private static extern bool AllocConsole();
 
@@ -51,11 +62,13 @@ namespace SunshineFreezer
         private string pssuspendPath;
         private bool isSettingsMode;
         private Mutex mutex;
+        private System.Windows.Forms.Timer portStatusTimer;
+        private bool? lastPortOccupied = null; // null=首次, true=上次占用, false=上次释放
 
         public Form1()
         {
             InitializeComponent();
-            pssuspendPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pssuspend64.exe");
+            pssuspendPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res", "pssuspend64.exe");
             settings = AppSettings.Load();
             string[] args = Environment.GetCommandLineArgs();
             isSettingsMode = args.Contains("--settings");
@@ -101,8 +114,6 @@ namespace SunshineFreezer
         {
             textBox1.Text = settings.text3;
             textBox2.Text = settings.text4;
-            textBox3.Text = settings.text5;
-            textBox4.Text = settings.text6;
             checkBox1.Checked = settings.text7 == "1";
             textBox5.Text = settings.text8;
             comboBox1.SelectedIndex = int.Parse(settings.text9);
@@ -116,17 +127,22 @@ namespace SunshineFreezer
                 Screen.PrimaryScreen.WorkingArea.Bottom - this.Height);
             this.Show();
             UpdatePortStatus();
+            // 设置页面每秒刷新端口状态
+            portStatusTimer = new System.Windows.Forms.Timer();
+            portStatusTimer.Interval = 1000;
+            portStatusTimer.Tick += (s, e) => UpdatePortStatus();
+            portStatusTimer.Start();
         }
 
         private void SetupTray()
         {
             notifyIcon = new NotifyIcon();
             SetTrayIcon("favicon.ico");
-            notifyIcon.Text = "串流自动冻结小工具(v0.1.9)";
+            notifyIcon.Text = "串流自动冻结小工具(精简版v1)";
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
             notifyIcon.MouseDoubleClick += NotifyIcon_MouseDoubleClick;
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Items.Add("调试", null, (s, e) => ShowConsole());
+            // menu.Items.Add("调试(精简版无效)", null, (s, e) => ShowConsole());
             menu.Items.Add("Github/使用说明", null, (s, e) => OpenGithub());
             menu.Items.Add("程序设置", null, (s, e) => OpenSettings());
             ToolStripMenuItem startupItem = new ToolStripMenuItem("开机自启动");
@@ -141,7 +157,7 @@ namespace SunshineFreezer
 
         private void SetTrayIcon(string iconName)
         {
-            string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iconName);
+            string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res", iconName);
             if (File.Exists(iconPath))
             {
                 notifyIcon.Icon = new Icon(iconPath);
@@ -235,24 +251,89 @@ namespace SunshineFreezer
             if (settings.text15 == "1" && !IsFullscreen()) return;
             int port = int.Parse(settings.text3);
             int pid = GetPidForPort(port);
-            if (pid != 0 && !isFrozen)
+            bool portOccupied = pid != 0;
+
+            // 首次运行，只记录状态不执行动作
+            if (lastPortOccupied == null)
             {
-                // 检查白名单
-                try
+                lastPortOccupied = portOccupied;
+                return;
+            }
+
+            // 状态未变化，不执行动作
+            if (lastPortOccupied == portOccupied)
+            {
+                return;
+            }
+
+            // 更新状态记录
+            lastPortOccupied = portOccupied;
+
+            if (portOccupied)
+            {
+                // 端口释放→占用：解冻（如果有已冻结的进程）
+                if (isFrozen)
                 {
-                    var proc = Process.GetProcessById(pid);
-                    if (settings.IsInWhitelist(proc.ProcessName))
+                    string processName = "";
+                    try
                     {
-                        return;
+                        var proc = Process.GetProcessById(frozenPid);
+                        processName = proc.ProcessName;
+                    }
+                    catch { }
+                    UnfreezeProcess(frozenPid);
+                    ShowTooltipOnUIThread($"端口被占用，已解冻进程: {processName}");
+                }
+            }
+            else
+            {
+                // 端口占用→释放：冻结前台窗口进程
+                if (!isFrozen)
+                {
+                    IntPtr hwnd = GetForegroundWindow();
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        GetWindowThreadProcessId(hwnd, out uint foregroundPid);
+                        if (foregroundPid > 0)
+                        {
+                            string windowTitle = GetWindowTitle(hwnd);
+                            string processName = "";
+                            try
+                            {
+                                var proc = Process.GetProcessById((int)foregroundPid);
+                                processName = proc.ProcessName;
+                            }
+                            catch { }
+
+                            // 检查白名单
+                            if (!string.IsNullOrEmpty(processName) && settings.IsInWhitelist(processName))
+                            {
+                                return;
+                            }
+
+                            FreezeProcess((int)foregroundPid);
+                            ShowTooltipOnUIThread($"端口已释放，已冻结进程: {processName}\n窗口: {windowTitle}");
+                        }
                     }
                 }
-                catch { }
-                FreezeProcess(pid);
             }
-            else if (pid == 0 && isFrozen && !isManualFreeze)
+        }
+
+        private string GetWindowTitle(IntPtr hwnd)
+        {
+            StringBuilder sb = new StringBuilder(256);
+            GetWindowText(hwnd, sb, sb.Capacity);
+            return sb.ToString();
+        }
+
+        private void ShowTooltipOnUIThread(string message)
+        {
+            if (this.InvokeRequired)
             {
-                UnfreezeProcess(frozenPid);
+                this.Invoke(new Action<string>(ShowTooltipOnUIThread), message);
+                return;
             }
+            ShowTooltip(message);
         }
 
         private int GetPidForPort(int port)
@@ -267,19 +348,27 @@ namespace SunshineFreezer
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
             string[] lines = output.Split('\n');
+            string portStr = ":" + port.ToString();
             foreach (string line in lines)
             {
-                if (line.Contains(":" + port.ToString()) && line.Contains("LISTENING"))
+                if (!line.Contains(portStr)) continue;
+
+                string[] parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2) continue;
+
+                // TCP LISTENING 状态
+                if (parts[1].Contains(portStr) && line.Contains("LISTENING"))
                 {
-                    string[] parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length >= 5)
-                    {
-                        int pid;
-                        if (int.TryParse(parts[4], out pid))
-                        {
-                            return pid;
-                        }
-                    }
+                    int pid;
+                    if (int.TryParse(parts[parts.Length - 1], out pid))
+                        return pid;
+                }
+                // UDP 端口（netstat 中 UDP 行没有 LISTENING 状态）
+                if (parts[0].ToUpper().StartsWith("UDP") && parts[1].Contains(portStr))
+                {
+                    int pid;
+                    if (int.TryParse(parts[parts.Length - 1], out pid))
+                        return pid;
                 }
             }
             return 0;
@@ -301,6 +390,10 @@ namespace SunshineFreezer
             }
             catch { }
 
+            // 最小化被冻结的窗口
+            MinimizeProcessWindows(pid);
+            System.Threading.Thread.Sleep(300);
+
             Process p = new Process();
             p.StartInfo.FileName = pssuspendPath;
             p.StartInfo.Arguments = $"{pid}";
@@ -310,12 +403,6 @@ namespace SunshineFreezer
             p.WaitForExit();
             isFrozen = true;
             frozenPid = pid;
-            
-            // 只有自动冻结时才改变托盘图标，手动冻结不改变图标
-            if (!isManualFreeze)
-            {
-                SetTrayIcon("favicon_pause.ico");
-            }
 
             // 记录历史
             if (!string.IsNullOrEmpty(processName))
@@ -331,6 +418,20 @@ namespace SunshineFreezer
             {
                 StartSleepTimer(int.Parse(settings.text8), int.Parse(settings.text9));
             }
+        }
+
+        private void MinimizeProcessWindows(int pid)
+        {
+            try
+            {
+                var proc = Process.GetProcessById(pid);
+                // 枚举进程的主窗口句柄并最小化
+                if (proc.MainWindowHandle != IntPtr.Zero)
+                {
+                    ShowWindow(proc.MainWindowHandle, SW_MINIMIZE);
+                }
+            }
+            catch { }
         }
 
         private void UnfreezeProcess(int pid)
@@ -352,12 +453,6 @@ namespace SunshineFreezer
             p.WaitForExit();
             isFrozen = false;
             frozenPid = 0;
-            
-            // 只有自动解冻时才恢复托盘图标，手动解冻不改变图标
-            if (!isManualFreeze)
-            {
-                SetTrayIcon("favicon.ico");
-            }
 
             // 记录历史
             if (!string.IsNullOrEmpty(processName))
@@ -383,7 +478,7 @@ namespace SunshineFreezer
 
         private void OpenGithub()
         {
-            Process.Start("https://github.com/gmaox/Sunshine-HzFreezer-autotool");
+            Process.Start("https://github.com/gmaox/Sunshine-HzFreezer-autotool/tree/NET");
         }
 
         private void OpenSettings()
@@ -417,8 +512,6 @@ namespace SunshineFreezer
         {
             settings.text3 = textBox1.Text;
             settings.text4 = textBox2.Text;
-            settings.text5 = textBox3.Text;
-            settings.text6 = textBox4.Text;
             settings.text7 = checkBox1.Checked ? "1" : "0";
             settings.text8 = textBox5.Text;
             settings.text9 = comboBox1.SelectedIndex.ToString();
@@ -493,6 +586,11 @@ namespace SunshineFreezer
             {
                 e.Cancel = true;
                 this.Hide();
+            }
+            else
+            {
+                portStatusTimer?.Stop();
+                portStatusTimer?.Dispose();
             }
         }
 
