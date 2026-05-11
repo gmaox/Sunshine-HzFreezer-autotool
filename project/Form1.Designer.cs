@@ -86,9 +86,9 @@
             // 
             this.checkBox1.Location = new System.Drawing.Point(15, 92);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(200, 20);
+            this.checkBox1.Size = new System.Drawing.Size(310, 20);
             this.checkBox1.TabIndex = 8;
-            this.checkBox1.Text = "自动冻结后开启睡眠倒计时";
+            this.checkBox1.Text = "自动冻结后开启睡眠倒计时(该功能未完全测试)";
             // 
             // label5
             // 

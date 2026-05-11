@@ -5,6 +5,8 @@ using System.Linq;
 using System.Management;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Diagnostics;
 
 namespace SunshineFreezer
 {
@@ -25,22 +27,41 @@ namespace SunshineFreezer
         [DllImport("user32.dll")]
         private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int processId);
+
+        [DllImport("ntdll.dll")]
+        private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref int processInformation, int processInformationLength, out int returnLength);
+
+        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
         private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
         private const int SW_MINIMIZE = 6;
         private const uint EVENT_SYSTEM_FOREGROUND = 3;
         private const uint WINEVENT_OUTOFCONTEXT = 0;
+        private const int ProcessBasicInformation = 0;
 
         private Form1 mainForm;
         private ListView listViewFrozen;
         private Timer refreshTimer;
         private Button freezeForegroundButton;
+        private Button refreshButton;
         private Button pauseButton;
         private Button whitelistButton;
         private Button historyButton;
         private IntPtr winEventHook = IntPtr.Zero;
         private int currentProcessId;
         private bool isFreezing = false;
+        private Timer freezeTimeoutTimer;
 
         public ProcessListForm(Form1 mainForm)
         {
@@ -81,12 +102,22 @@ namespace SunshineFreezer
 
             freezeForegroundButton = new Button();
             freezeForegroundButton.Text = "冻结前台窗口";
-            freezeForegroundButton.Location = new Point(150, 160);
-            freezeForegroundButton.Size = new Size(300, 50);
+            freezeForegroundButton.Location = new Point(200, 160);
+            freezeForegroundButton.Size = new Size(250, 50);
             freezeForegroundButton.Font = new Font("Arial", 16, FontStyle.Bold);
             freezeForegroundButton.BackColor = Color.LightGreen;
             freezeForegroundButton.Click += FreezeForegroundButton_Click;
             this.Controls.Add(freezeForegroundButton);
+
+            // 刷新按钮（冻结按钮左边）
+            refreshButton = new Button();
+            refreshButton.Text = "刷新冻结列表";
+            refreshButton.Location = new Point(20, 160);
+            refreshButton.Size = new Size(170, 50);
+            refreshButton.Font = new Font("Arial", 14, FontStyle.Bold);
+            refreshButton.BackColor = Color.LightBlue;
+            refreshButton.Click += RefreshButton_Click;
+            this.Controls.Add(refreshButton);
 
             // 白名单按钮（左边）
             whitelistButton = new Button();
@@ -141,7 +172,26 @@ namespace SunshineFreezer
             // 保持委托引用，防止被垃圾回收
             this.dele = dele;
             winEventHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0, WINEVENT_OUTOFCONTEXT);
-            ShowTooltip("请点击要冻结的窗口");
+            ShowTooltip("请点击要冻结的窗口（5秒超时）");
+
+            // 5秒超时取消
+            freezeTimeoutTimer = new Timer();
+            freezeTimeoutTimer.Interval = 5000;
+            freezeTimeoutTimer.Tick += (s, ev) =>
+            {
+                freezeTimeoutTimer.Stop();
+                freezeTimeoutTimer.Dispose();
+                freezeTimeoutTimer = null;
+                if (isFreezing)
+                {
+                    UnhookWinEvent(winEventHook);
+                    winEventHook = IntPtr.Zero;
+                    isFreezing = false;
+                    freezeForegroundButton.Enabled = true;
+                    ShowTooltip("选择超时，已取消冻结");
+                }
+            };
+            freezeTimeoutTimer.Start();
         }
 
         private WinEventDelegate dele; // 保持委托引用
@@ -209,19 +259,14 @@ namespace SunshineFreezer
                 {
                     var proc = System.Diagnostics.Process.GetProcessById((int)pid);
 
-                    // 检查白名单
-                    if (mainForm.GetSettings().IsInWhitelist(proc.ProcessName))
+                    // 跳过 explorer.exe，继续等待用户选择目标窗口
+                    if (proc.ProcessName.ToLower() == "explorer")
                     {
-                        ShowTooltip($"{proc.ProcessName} 在白名单中，跳过冻结");
-                        UnhookWinEvent(winEventHook);
-                        winEventHook = IntPtr.Zero;
-                        isFreezing = false;
-                        freezeForegroundButton.Enabled = true;
                         return;
                     }
 
-                    // 避免冻结 explorer.exe
-                    if (proc.ProcessName.ToLower() == "explorer")
+                    // 跳过白名单中的进程，继续等待
+                    if (mainForm.GetSettings().IsInWhitelist(proc.ProcessName))
                     {
                         return;
                     }
@@ -229,6 +274,9 @@ namespace SunshineFreezer
                     UnhookWinEvent(winEventHook);
                     winEventHook = IntPtr.Zero;
                     isFreezing = false;
+                    freezeTimeoutTimer?.Stop();
+                    freezeTimeoutTimer?.Dispose();
+                    freezeTimeoutTimer = null;
                     System.Threading.Thread.Sleep(300);
                     ShowWindow(hwnd, SW_MINIMIZE);
                     System.Threading.Thread.Sleep(300);
@@ -259,6 +307,7 @@ namespace SunshineFreezer
         private void UpdateList()
         {
             listViewFrozen.Items.Clear();
+            // 始终显示当前冻结的进程
             if (mainForm.GetIsFrozen() && mainForm.GetFrozenPid() != 0)
             {
                 try
@@ -267,6 +316,98 @@ namespace SunshineFreezer
                     listViewFrozen.Items.Add(new ListViewItem(new string[] { proc.ProcessName, mainForm.GetFrozenPid().ToString() }));
                 }
                 catch { }
+            }
+        }
+
+        private void RefreshButton_Click(object sender, EventArgs e)
+        {
+            refreshTimer.Stop();
+            listViewFrozen.Items.Clear();
+
+            // 收集所有有可见窗口的进程 PID
+            var windowPids = new HashSet<int>();
+            EnumWindows((hWnd, lParam) =>
+            {
+                if (IsWindowVisible(hWnd))
+                {
+                    GetWindowThreadProcessId(hWnd, out int pid);
+                    if (pid > 0)
+                        windowPids.Add(pid);
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            // 扫描所有进程，找出挂起且有窗口的
+            var suspendedWithWindow = new List<KeyValuePair<string, int>>();
+            try
+            {
+                foreach (var proc in Process.GetProcesses())
+                {
+                    if (proc.Id == 0 || proc.Id == Process.GetCurrentProcess().Id) continue;
+                    if (!windowPids.Contains(proc.Id)) continue;
+                    if (mainForm.GetSettings().IsInWhitelist(proc.ProcessName)) continue;
+
+                    try
+                    {
+                        if (IsProcessSuspended(proc))
+                        {
+                            suspendedWithWindow.Add(new KeyValuePair<string, int>(proc.ProcessName, proc.Id));
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            // 添加当前冻结的进程（确保始终显示）
+            if (mainForm.GetIsFrozen() && mainForm.GetFrozenPid() != 0)
+            {
+                bool alreadyInList = suspendedWithWindow.Any(p => p.Value == mainForm.GetFrozenPid());
+                if (!alreadyInList)
+                {
+                    try
+                    {
+                        var proc = Process.GetProcessById(mainForm.GetFrozenPid());
+                        suspendedWithWindow.Insert(0, new KeyValuePair<string, int>(proc.ProcessName, proc.Id));
+                    }
+                    catch { }
+                }
+            }
+
+            foreach (var item in suspendedWithWindow)
+            {
+                listViewFrozen.Items.Add(new ListViewItem(new string[] { item.Key, item.Value.ToString() }));
+            }
+
+            if (suspendedWithWindow.Count == 0)
+            {
+                ShowTooltip("未发现挂起的窗口程序");
+            }
+        }
+
+        private bool IsProcessSuspended(Process proc)
+        {
+            try
+            {
+                bool hasSuspendedThreads = false;
+                bool hasRunningThreads = false;
+                foreach (ProcessThread thread in proc.Threads)
+                {
+                    if (thread.ThreadState == ThreadState.Wait && thread.WaitReason == ThreadWaitReason.Suspended)
+                    {
+                        hasSuspendedThreads = true;
+                    }
+                    else if (thread.ThreadState != ThreadState.Wait || thread.WaitReason != ThreadWaitReason.Suspended)
+                    {
+                        hasRunningThreads = true;
+                    }
+                }
+                // 所有线程都处于 Suspended 状态才认为是挂起
+                return hasSuspendedThreads && !hasRunningThreads;
+            }
+            catch
+            {
+                return false;
             }
         }
 

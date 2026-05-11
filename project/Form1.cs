@@ -39,6 +39,7 @@ namespace SunshineFreezer
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private const int SW_MINIMIZE = 6;
+        private const int SW_RESTORE = 9;
 
         [DllImport("kernel32.dll")]
         private static extern bool AllocConsole();
@@ -89,6 +90,7 @@ namespace SunshineFreezer
             {
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
+                this.Hide();
                 SetupTray();
                 // 恢复暂停状态继承
                 if (settings.text13 == "1" && settings.text14 == "1")
@@ -425,10 +427,22 @@ namespace SunshineFreezer
             try
             {
                 var proc = Process.GetProcessById(pid);
-                // 枚举进程的主窗口句柄并最小化
                 if (proc.MainWindowHandle != IntPtr.Zero)
                 {
                     ShowWindow(proc.MainWindowHandle, SW_MINIMIZE);
+                }
+            }
+            catch { }
+        }
+
+        private void RestoreProcessWindows(int pid)
+        {
+            try
+            {
+                var proc = Process.GetProcessById(pid);
+                if (proc.MainWindowHandle != IntPtr.Zero)
+                {
+                    ShowWindow(proc.MainWindowHandle, SW_RESTORE);
                 }
             }
             catch { }
@@ -453,6 +467,10 @@ namespace SunshineFreezer
             p.WaitForExit();
             isFrozen = false;
             frozenPid = 0;
+
+            // 恢复被冻结进程的窗口
+            RestoreProcessWindows(pid);
+            System.Threading.Thread.Sleep(300);
 
             // 记录历史
             if (!string.IsNullOrEmpty(processName))
@@ -662,6 +680,20 @@ namespace SunshineFreezer
         private void label9_Click(object sender, EventArgs e)
         {
 
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                if (!isSettingsMode)
+                {
+                    // WS_EX_TOOLWINDOW + WS_EX_NOACTIVATE: 从 Alt+Tab 隐藏
+                    cp.ExStyle |= 0x80 | 0x08000000;
+                }
+                return cp;
+            }
         }
     }
 }

@@ -37,7 +37,7 @@ namespace SunshineFreezer
         public List<HistoryRecord> History { get; set; } = new List<HistoryRecord>();
 
         // 新增：白名单（进程名列表）
-        public List<string> Whitelist { get; set; } = new List<string> { "explorer", "svchost", "csrss", "lsass", "services", "winlogon", "SunshineFreezer" };
+        public List<string> Whitelist { get; set; } = new List<string> { "explorer", "svchost", "csrss", "lsass", "services", "winlogon", "SunshineFreezer", "StartMenuExperienceHost" };
 
         private const int MaxHistoryCount = 30;
         private const string ConfigFile = "1.json";
