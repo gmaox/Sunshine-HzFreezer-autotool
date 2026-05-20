@@ -29,9 +29,9 @@ namespace SunshineFreezer
         public string text10 { get; set; } = "0";
         public string text11 { get; set; } = "输入冻结时的命令";
         public string text12 { get; set; } = "输入解冻时的命令";
-        public string text13 { get; set; } = "1";
+        public string text13 { get; set; } = "0";
         public string text14 { get; set; } = "0";
-        public string text15 { get; set; } = "0";
+        public string text15 { get; set; } = "1";
 
         // 新增：历史记录（最多30条）
         public List<HistoryRecord> History { get; set; } = new List<HistoryRecord>();
@@ -42,9 +42,10 @@ namespace SunshineFreezer
         private const int MaxHistoryCount = 30;
         private const string ConfigFile = "1.json";
 
-        public static AppSettings Load()
+        public static AppSettings Load(out bool isFirstRun)
         {
-            if (File.Exists(ConfigFile))
+            isFirstRun = !File.Exists(ConfigFile);
+            if (!isFirstRun)
             {
                 try
                 {
@@ -58,6 +59,11 @@ namespace SunshineFreezer
                 }
             }
             return new AppSettings();
+        }
+
+        public static AppSettings Load()
+        {
+            return Load(out _);
         }
 
         public void Save()

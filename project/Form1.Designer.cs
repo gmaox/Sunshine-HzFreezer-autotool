@@ -42,7 +42,6 @@
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox7 = new System.Windows.Forms.TextBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.buttonSave = new System.Windows.Forms.Button();
             this.pictureBoxPortStatus = new System.Windows.Forms.PictureBox();
@@ -162,14 +161,6 @@
             this.textBox7.Size = new System.Drawing.Size(224, 21);
             this.textBox7.TabIndex = 17;
             // 
-            // checkBox3
-            // 
-            this.checkBox3.Location = new System.Drawing.Point(15, 272);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(133, 20);
-            this.checkBox3.TabIndex = 18;
-            this.checkBox3.Text = "启动时显示通知";
-            // 
             // checkBox4
             // 
             this.checkBox4.Location = new System.Drawing.Point(15, 302);
@@ -234,7 +225,6 @@
             this.Controls.Add(this.textBox6);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.textBox7);
-            this.Controls.Add(this.checkBox3);
             this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.buttonSave);
             this.Controls.Add(this.labelPortStatus);
@@ -263,7 +253,6 @@
         private System.Windows.Forms.TextBox textBox6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox textBox7;
-        private System.Windows.Forms.CheckBox checkBox3;
         private System.Windows.Forms.CheckBox checkBox4;
         private System.Windows.Forms.Button buttonSave;
         private System.Windows.Forms.PictureBox pictureBoxPortStatus;

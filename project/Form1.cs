@@ -70,7 +70,7 @@ namespace SunshineFreezer
         {
             InitializeComponent();
             pssuspendPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res", "pssuspend64.exe");
-            settings = AppSettings.Load();
+            settings = AppSettings.Load(out bool isFirstRun);
             string[] args = Environment.GetCommandLineArgs();
             isSettingsMode = args.Contains("--settings");
 
@@ -90,7 +90,6 @@ namespace SunshineFreezer
             {
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
-                this.Hide();
                 SetupTray();
                 // 恢复暂停状态继承
                 if (settings.text13 == "1" && settings.text14 == "1")
@@ -99,15 +98,11 @@ namespace SunshineFreezer
                     SetTrayIcon("favicon_pause.ico");
                 }
                 StartMonitoring();
-                // 检查是否启用了启动时显示通知
-                if (settings.text13 == "1")
+                // 首次启动时显示通知
+                if (isFirstRun)
                 {
                     string toastMsg = isPaused ? "但是是暂停状态，请点击系统托盘图标进行恢复\n" : "";
                     ShowToast("串流监听程序已启动", $"{toastMsg}右键系统托盘图标进行配置");
-                    if (!IsUserAnAdmin())
-                    {
-                        ShowToast("串流监听程序启动(未使用管理员模式)", "部分游戏需用管理员身份运行工具\n不使用可能会无法冻结\n右键系统托盘图标进行配置");
-                    }
                 }
             }
         }
@@ -122,7 +117,6 @@ namespace SunshineFreezer
             checkBox2.Checked = settings.text10 == "1";
             textBox6.Text = settings.text11;
             textBox7.Text = settings.text12;
-            checkBox3.Checked = settings.text13 == "1";
             checkBox4.Checked = settings.text15 == "1";
             this.StartPosition = FormStartPosition.Manual;
             this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Right - this.Width,
@@ -250,7 +244,6 @@ namespace SunshineFreezer
         private void CheckPort(object state)
         {
             if (isPaused) return;
-            if (settings.text15 == "1" && !IsFullscreen()) return;
             int port = int.Parse(settings.text3);
             int pid = GetPidForPort(port);
             bool portOccupied = pid != 0;
@@ -290,6 +283,9 @@ namespace SunshineFreezer
             else
             {
                 // 端口占用→释放：冻结前台窗口进程
+                // 仅全屏冻结：只在全屏时才冻结
+                if (settings.text15 == "1" && !IsFullscreen()) return;
+
                 if (!isFrozen)
                 {
                     IntPtr hwnd = GetForegroundWindow();
@@ -335,7 +331,7 @@ namespace SunshineFreezer
                 this.Invoke(new Action<string>(ShowTooltipOnUIThread), message);
                 return;
             }
-            ShowTooltip(message);
+            notifyIcon.ShowBalloonTip(2000, "SunshineFreezer", message, ToolTipIcon.Info);
         }
 
         private int GetPidForPort(int port)
@@ -536,7 +532,6 @@ namespace SunshineFreezer
             settings.text10 = checkBox2.Checked ? "1" : "0";
             settings.text11 = textBox6.Text;
             settings.text12 = textBox7.Text;
-            settings.text13 = checkBox3.Checked ? "1" : "0";
             settings.text15 = checkBox4.Checked ? "1" : "0";
             settings.Save();
             ShowTooltip("保存成功");
@@ -680,20 +675,6 @@ namespace SunshineFreezer
         private void label9_Click(object sender, EventArgs e)
         {
 
-        }
-
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                if (!isSettingsMode)
-                {
-                    // WS_EX_TOOLWINDOW + WS_EX_NOACTIVATE: 从 Alt+Tab 隐藏
-                    cp.ExStyle |= 0x80 | 0x08000000;
-                }
-                return cp;
-            }
         }
     }
 }

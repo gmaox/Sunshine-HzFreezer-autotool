@@ -389,24 +389,22 @@ namespace SunshineFreezer
         {
             try
             {
-                bool hasSuspendedThreads = false;
-                bool hasRunningThreads = false;
+                int suspendedCount = 0;
+                int totalThreads = 0;
                 foreach (ProcessThread thread in proc.Threads)
                 {
+                    totalThreads++;
                     if (thread.ThreadState == ThreadState.Wait && thread.WaitReason == ThreadWaitReason.Suspended)
                     {
-                        hasSuspendedThreads = true;
-                    }
-                    else if (thread.ThreadState != ThreadState.Wait || thread.WaitReason != ThreadWaitReason.Suspended)
-                    {
-                        hasRunningThreads = true;
+                        suspendedCount++;
                     }
                 }
-                // 所有线程都处于 Suspended 状态才认为是挂起
-                return hasSuspendedThreads && !hasRunningThreads;
+                // 超过 80% 的线程处于挂起状态即认为是挂起进程
+                return totalThreads > 0 && (double)suspendedCount / totalThreads >= 0.8;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[{proc.ProcessName}] Error: {ex.Message}");
                 return false;
             }
         }

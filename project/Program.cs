@@ -16,9 +16,7 @@ namespace SunshineFreezer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form1 mainForm = new Form1();
-            // 不通过 Application.Run 显示窗体，避免左下角残留
-            Application.Run();
+            Application.Run(new Form1());
         }
     }
 }
